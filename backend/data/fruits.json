@@ -1,0 +1,632 @@
+[
+  {
+    "dev_name": "banana",
+    "name_en": "Banana",
+    "name_de": "Banane",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "apple_gala",
+    "name_en": "Apple Gala",
+    "name_de": "Apfel Gala",
+    "note": "1. Kl.",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "apple_2",
+    "name_en": "Apple II",
+    "name_de": "Apfel II",
+    "note": "Golden / Pinova / Diwa / Braeburn / Pink Rose, 1. Kl.",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [4, 5, 6, 7, 8, 9, 10, 11]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "pear",
+    "name_en": "Pear",
+    "name_de": "Birne",
+    "note": "Conference / Kaiser Alexander, 1. Kl.",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "clementine",
+    "name_en": "Clementine",
+    "name_de": "Clementine",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [1, 2, 3, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "orange",
+    "name_en": "Orange",
+    "name_de": "Orange",
+    "note": "Blond / Blutorangen",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "nectarine",
+    "name_en": "Nectarine",
+    "name_de": "Nektarine",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      },
+      "bio": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "peach",
+    "name_en": "Peach",
+    "name_de": "Pfirsich",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      },
+      "bio": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "plum",
+    "name_en": "Plum",
+    "name_de": "Pflaume",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "box",
+        "months": [9, 10]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [9, 10]
+      },
+      "bio": {
+        "category": "box",
+        "months": [9, 10]
+      }
+    }
+  },
+  {
+    "dev_name": "kiwi",
+    "name_en": "Kiwi",
+    "name_de": "Kiwi",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 2, 3, 4, 5, 6, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "kaki",
+    "name_en": "Persimmon",
+    "name_de": "Kaki",
+    "note": "",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [10, 11, 12]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [1, 10, 11, 12]
+      },
+      "bio": {
+        "category": "box",
+        "months": [1, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "damson",
+    "name_en": "Damson",
+    "name_de": "Zwetschge",
+    "note": "Standard: 500 g",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [8, 9]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [8, 9]
+      },
+      "bio": {
+        "category": "box",
+        "months": [8, 9]
+      }
+    }
+  },
+  {
+    "dev_name": "apricot",
+    "name_en": "Apricot",
+    "name_de": "Aprikose",
+    "note": "Standard: 500 g",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      },
+      "bio": {
+        "category": "box",
+        "months": [5, 6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "lemon",
+    "name_en": "Lemon",
+    "name_de": "Zitrone",
+    "note": "",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "lime",
+    "name_en": "Lime",
+    "name_de": "Limette",
+    "note": "",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "watermelon_mini",
+    "name_en": "Mini Watermelon",
+    "name_de": "Wassermelone Mini",
+    "note": "",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      }
+    }
+  },
+  {
+    "dev_name": "melon_charentais",
+    "name_en": "Charentais Melon",
+    "name_de": "Melone Charentais",
+    "note": "",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8, 9]
+      }
+    }
+  },
+  {
+    "dev_name": "raspberry",
+    "name_en": "Raspberry",
+    "name_de": "Himbeere",
+    "note": "CH, 250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "strawberry",
+    "name_en": "Strawberry",
+    "name_de": "Erdbeere",
+    "note": "CH, 250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "blueberry",
+    "name_en": "Blueberry",
+    "name_de": "Blaubeere",
+    "note": "CH, 250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "blackberry",
+    "name_en": "Blackberry",
+    "name_de": "Brombeere",
+    "note": "CH, 250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "cherry",
+    "name_en": "Cherry",
+    "name_de": "Kirsche",
+    "note": "CH, 250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [6, 7, 8]
+      }
+    }
+  },
+  {
+    "dev_name": "grapes_seedless",
+    "name_en": "Seedless Grapes",
+    "name_de": "Trauben kernenlos",
+    "note": "500 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "fig",
+    "name_en": "Figs",
+    "name_de": "Feigen",
+    "note": "Schale à 5 Stk.",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      }
+    }
+  },
+  {
+    "dev_name": "lychee",
+    "name_en": "Lychee",
+    "name_de": "Litchi",
+    "note": "250 g",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      }
+    }
+  },
+  {
+    "dev_name": "dragon_fruit",
+    "name_en": "Dragon Fruit",
+    "name_de": "Drachenfrucht",
+    "note": "Bio",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      }
+    }
+  },
+  {
+    "dev_name": "mango",
+    "name_en": "Mango",
+    "name_de": "Mango",
+    "note": "Bio",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [8, 9, 10]
+      }
+    }
+  },
+  {
+    "dev_name": "ginger",
+    "name_en": "Ginger",
+    "name_de": "Ingwer",
+    "note": "",
+    "unit": "pcs",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "dried_fruit",
+    "name_en": "Dried Fruit",
+    "name_de": "Trockenfrüchte",
+    "note": "Datteln / Aprikosen / Bergfeigen / Nuss- / Sport- / Xundmix",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      }
+    }
+  },
+  {
+    "dev_name": "peppermint",
+    "name_en": "Peppermint",
+    "name_de": "Pfefferminze",
+    "note": "div. Kräuter Bund",
+    "unit": "kg",
+    "availability": {
+      "standard": {
+        "category": "addon",
+        "months": [4, 5, 6, 7, 8, 9, 10]
+      },
+      "spezial": {
+        "category": "addon",
+        "months": [4, 5, 6, 7, 8, 9, 10]
+      },
+      "bio": {
+        "category": "addon",
+        "months": [4, 5, 6, 7, 8, 9, 10]
+      }
+    }
+  }
+]

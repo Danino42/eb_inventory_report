@@ -1,0 +1,353 @@
+.dev-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: grid;
+  gap: 20px;
+}
+
+.dev-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dev-page__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--hover);
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+
+.filters label {
+  display: grid;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.filters select,
+.filters input,
+.filters button {
+  color: var(--text);
+}
+
+.filters__month {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.filters__search {
+  flex: 1 1 200px;
+}
+
+/* Table */
+.table-count {
+  margin: 0 0 10px;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.fruit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fruit-table th,
+.fruit-table td {
+  padding: 7px 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+}
+
+.fruit-table th {
+  position: sticky;
+  top: 0;
+  padding: 0;
+  background: var(--header-bg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The whole header cell is the tap target for sorting */
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sort-button:hover,
+.sort-button.is-active {
+  color: var(--text-strong);
+}
+
+.sort-button__icon {
+  font-size: 0.7rem;
+  opacity: 0.45;
+}
+
+.sort-button.is-active .sort-button__icon {
+  opacity: 1;
+}
+
+.fruit-table tbody tr {
+  cursor: pointer;
+}
+
+.fruit-table tbody tr:hover {
+  background: var(--hover);
+}
+
+.fruit-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Simple view: fixed layout so Fruit and Months get equal halves */
+.fruit-table--simple {
+  table-layout: fixed;
+}
+
+.fruit-table__col-half {
+  width: 45%;
+}
+
+.fruit-table__col-action {
+  width: 10%;
+}
+
+.fruit-table--simple td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.fruit-table--simple th {
+  vertical-align: bottom;
+}
+
+.fruit-table--simple .fruit-table__name {
+  font-size: 1rem;
+}
+
+/* Month initials sit under the "Months" sort button, aligned with the bars below */
+.fruit-table__initials {
+  display: block;
+  padding: 0 12px 6px;
+}
+
+.fruit-table--detailed .fruit-table__name {
+  min-width: 200px;
+}
+
+.fruit-table__box {
+  white-space: nowrap;
+}
+
+.addon-mark {
+  margin-left: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Edit sits at the far right; the other columns take only the space they need */
+.fruit-table__action {
+  text-align: right !important;
+}
+
+/* Detailed view: Edit takes the leftover space, so the data columns stay compact */
+.fruit-table--detailed .fruit-table__action {
+  width: 100%;
+}
+
+.note {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Editor dialog */
+.editor {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.editor::backdrop {
+  background: var(--backdrop);
+}
+
+.editor form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.editor__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.editor__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.editor__grid label {
+  display: grid;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.editor__grid input,
+.editor__grid select {
+  color: var(--text);
+}
+
+.editor__wide {
+  grid-column: 1 / -1;
+}
+
+.editor__box {
+  margin: 0;
+  padding: 8px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.editor__box.is-off {
+  padding-bottom: 2px;
+}
+
+.editor__box legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.editor__box-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.editor__quick {
+  display: flex;
+  gap: 6px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  accent-color: var(--text-strong);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.segmented button {
+  min-height: 30px;
+  padding: 2px 12px;
+  border: none;
+  background: var(--bg);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--border-strong);
+}
+
+.segmented button.is-active {
+  background: var(--text-strong);
+  color: var(--on-strong);
+}
+
+/* Month toggles stay finger-sized for the touchscreen */
+.month-toggles {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.month-toggles button {
+  min-height: 38px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.month-toggles button.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.spacer {
+  flex: 1;
+}
+
+@media (min-width: 720px) {
+  .month-toggles {
+    grid-template-columns: repeat(12, 1fr);
+  }
+}

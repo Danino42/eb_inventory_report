@@ -27,6 +27,8 @@ export default defineConfig({
       workbox: {
         // Cache all built files so the app opens without internet
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        // Page URLs fall back to index.html offline, but API calls must always reach the backend
+        navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
         // Lets you test the manifest and service worker during `npm run dev`
@@ -37,9 +39,10 @@ export default defineConfig({
   server: {
     // Makes the dev server reachable from a tablet on the same Wi-Fi
     host: true,
-    // Forwards /api calls to the FastAPI dev server, so the frontend can use relative URLs
+    // Forwards /api calls to the FastAPI dev server, so the frontend can use relative URLs.
+    // 127.0.0.1 rather than localhost: Node resolves localhost to IPv6, FastAPI listens on IPv4
     proxy: {
-      '/api': 'http://localhost:8000',
+      '/api': 'http://127.0.0.1:8000',
     },
   },
 })

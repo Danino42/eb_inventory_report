@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Placeholder app icon: replace with the real logo later, then run `npm run generate-pwa-assets` -->
+  <rect width="512" height="512" rx="96" fill="#2f6b3a"/>
+  <text x="256" y="320" font-family="Arial, Helvetica, sans-serif" font-size="200" font-weight="700" fill="#ffffff" text-anchor="middle">EB</text>
+</svg>

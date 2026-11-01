@@ -23,8 +23,11 @@ export function formatAmount(value: number): string {
   return String(Math.round(value * 100) / 100).replace('.', ',')
 }
 
-/** − / + buttons: change by one, never below zero */
-export function stepAmount(text: string, delta: 1 | -1): string {
+/** Step sizes of the − / + / +10 buttons */
+export type StepDelta = -1 | 1 | 10
+
+/** − / + / +10 buttons: change by that amount, never below zero */
+export function stepAmount(text: string, delta: StepDelta): string {
   const next = Math.max(0, (parseAmount(text) ?? 0) + delta)
   return formatAmount(next)
 }

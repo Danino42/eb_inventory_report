@@ -40,9 +40,10 @@ export default defineConfig({
     // Makes the dev server reachable from a tablet on the same Wi-Fi
     host: true,
     // Forwards /api calls to the FastAPI dev server, so the frontend can use relative URLs.
-    // 127.0.0.1 rather than localhost: Node resolves localhost to IPv6, FastAPI listens on IPv4
+    // 127.0.0.1 rather than localhost: Node resolves localhost to IPv6, FastAPI listens on IPv4.
+    // API_PROXY_TARGET points it at another backend, e.g. a second one on a different port.
     proxy: {
-      '/api': 'http://127.0.0.1:8000',
+      '/api': process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:8000',
     },
   },
 })

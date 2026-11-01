@@ -23,6 +23,19 @@ class Settings(BaseSettings):
     # Names offered in the worker form's name picker
     workers_file: Path = BACKEND_DIR / "data" / "workers.json"
 
+    # Inventory reports: who receives the PDF + CSV email
+    report_recipients: list[str] = []
+    # SMTP for sending; if smtp_host is empty, emails are only saved to outbox_dir (as .eml)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "Earlybird Warenbestand <noreply@earlybird.local>"
+    # Every report email (+ PDF, CSV) is also kept here as a copy
+    outbox_dir: Path = BACKEND_DIR / "outbox"
+    # Icons for the PDF: the same files the app shows (fruit_icons/<dev_name>.png, ifco.png)
+    images_dir: Path = BACKEND_DIR.parent / "frontend" / "src" / "images"
+
 
 @lru_cache
 def get_settings() -> Settings:

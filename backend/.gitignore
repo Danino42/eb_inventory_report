@@ -13,3 +13,6 @@ __pycache__/
 # Local databases
 *.db
 *.sqlite3
+
+# Saved report emails (PDF, CSV, .eml)
+outbox/

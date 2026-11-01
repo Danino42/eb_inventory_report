@@ -18,6 +18,9 @@
   --danger-bg: #fdf3f2;
   --warn: #8a5a00;
   --warn-bg: #fff6e0;
+  /* Empty fields in the review / PDF */
+  --empty-bg: #fff1df;
+  --empty-text: #b4691f;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   --backdrop: rgb(0 0 0 / 0.3);
 
@@ -51,6 +54,8 @@
   --danger-bg: #2a1716;
   --warn: #f0b44c;
   --warn-bg: #2e2412;
+  --empty-bg: #3a2a17;
+  --empty-text: #f2b27a;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5);
   --backdrop: rgb(0 0 0 / 0.6);
   color-scheme: dark;

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
-import type { InventoryReport, StockLine } from '../../api/reports'
+import { useEffect, useRef, useState } from 'react'
+import { getDeliveryInfo, type DeliveryInfo, type InventoryReport, type StockLine } from '../../api/reports'
+import { readJson, writeJson } from '../../lib/storage'
 import { FruitIcon } from '../../components/FruitIcon'
 import ifcoIcon from '../../images/ifco.png'
 import { VARIANT_LABELS, type Variant } from '../../types/fruit'
@@ -16,6 +17,9 @@ interface Props {
 
 const SHORT: Record<Variant, string> = { conventional: 'Konv.', bio: 'Bio' }
 
+// Last known recipients, so the line is also shown when the tablet is offline
+const DELIVERY_KEY = 'eb-delivery-info-v1'
+
 /** Lines grouped per fruit, in form order */
 function byFruit(lines: StockLine[]) {
   const groups = new Map<string, StockLine[]>()
@@ -26,9 +30,21 @@ function byFruit(lines: StockLine[]) {
 /** One-screen overview before sending; empty fields in a soft orange */
 export function ReviewDialog({ report, sending, error, onSend, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const [delivery, setDelivery] = useState<DeliveryInfo | null>(() => readJson(DELIVERY_KEY, null))
 
   useEffect(() => {
     dialogRef.current?.showModal()
+  }, [])
+
+  useEffect(() => {
+    getDeliveryInfo()
+      .then((info) => {
+        setDelivery(info)
+        writeJson(DELIVERY_KEY, info)
+      })
+      .catch(() => {
+        // Offline: keep showing the last known recipients
+      })
   }, [])
 
   const { weekday, date } = formatReportDate(report.report_date)
@@ -46,7 +62,7 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
             <h2>
               {weekday} {date}
             </h2>
-            <p className={report.worker ? 'review__worker' : 'review__worker is-empty'}>
+            <p className={report.worker ? 'review__worker' : 'review__worker is-missing'}>
               {report.worker || 'Name fehlt'}
             </p>
           </div>
@@ -103,6 +119,18 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
         {error && (
           <p className="error" role="alert">
             {error}
+          </p>
+        )}
+
+        {delivery && (
+          <p className="review__recipient">
+            {delivery.email_enabled ? (
+              <>
+                <span className="muted">An</span> <strong>{delivery.recipients.join(', ')}</strong>
+              </>
+            ) : (
+              <span className="muted">E-Mail-Versand nicht eingerichtet, der Bericht wird auf dem Server gespeichert</span>
+            )}
           </p>
         )}
 

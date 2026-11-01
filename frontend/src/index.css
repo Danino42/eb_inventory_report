@@ -209,6 +209,26 @@ button:focus-visible {
   color: var(--on-strong);
 }
 
+/* "‹ Start" back button at the top of the form and the Verwaltung page */
+.home-link {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.home-link:hover {
+  background: var(--hover);
+}
+
 /* Hidden but still usable by the browser (e.g. the native date picker) */
 .visually-hidden {
   position: absolute;

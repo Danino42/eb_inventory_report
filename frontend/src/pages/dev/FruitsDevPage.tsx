@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { ApiError } from '../../api/client'
 import { listFruits } from '../../api/fruits'
 import { FruitIcon } from '../../components/FruitIcon'
@@ -122,6 +123,9 @@ export function FruitsDevPage() {
 
   return (
     <div className="dev-page">
+      <Link to="/" className="home-link">
+        ‹ Start
+      </Link>
       <header className="dev-page__header">
         <h1>
           Fruit catalogue <span className="muted">· dev</span>
@@ -335,6 +339,16 @@ export function FruitsDevPage() {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                {/* +1 for the Edit column */}
+                <td colSpan={columns.length + 1} className="fruit-table__add">
+                  <button type="button" onClick={() => setEditing({ mode: 'new' })}>
+                    + Add fruit
+                  </button>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </section>

@@ -1,0 +1,91 @@
+.home {
+  max-width: 1000px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 24px;
+}
+
+.home__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.home__header h1 {
+  font-size: 1.6rem;
+}
+
+/* Reports saved offline that still wait for sending */
+.home__queue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--warn);
+  background: var(--warn-bg);
+  color: var(--text-strong);
+}
+
+.home__queue-failed {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Two big tiles, side by side on a landscape tablet, stacked in portrait */
+.home__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-content: center;
+  gap: 20px;
+}
+
+.home__tile {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 280px;
+  padding: 32px 24px;
+  align-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+}
+
+.home__tile:hover {
+  background: var(--hover);
+}
+
+.home__tile:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.home__tile--primary {
+  border-color: var(--text-strong);
+  border-width: 2px;
+}
+
+.home__icons {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.home__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.home__sub {
+  font-size: 1.05rem;
+  color: var(--muted);
+}

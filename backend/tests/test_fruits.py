@@ -57,6 +57,9 @@ def test_filter_by_category_is_per_box(client: TestClient) -> None:
 
 def test_search(client: TestClient) -> None:
     assert names(client.get("/api/fruits", params={"q": "apfel"})) == {"apple_gala", "apple_2"}
+    # The note (small text under the name) is searched too
+    assert names(client.get("/api/fruits", params={"q": "pinova"})) == {"apple_2"}
+    assert names(client.get("/api/fruits", params={"q": "Blut"})) == {"orange"}
 
 
 def test_variants_and_article_number(client: TestClient) -> None:

@@ -32,11 +32,21 @@ class IfcoReport(BaseModel):
 class InventoryReport(BaseModel):
     """What the worker form sends: the digital "Warenbestände Lebensmittel" sheet."""
 
+    # Created once per report on the tablet; a resend with the same id is not emailed again
+    report_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9-]{8,64}$")
     report_date: date
     worker: str = Field(min_length=1, max_length=80)
     lines: list[StockLine] = Field(max_length=300)
     ifco: IfcoReport | None = None
     hq_notes: str = Field(default="", max_length=1000)
+
+
+class DeliveryInfo(BaseModel):
+    """Shown on the tablet before sending: where the report will go."""
+
+    recipients: list[str]
+    # False = SMTP not set up: reports are only saved on the server (outbox)
+    email_enabled: bool
 
 
 class ReportResult(BaseModel):

@@ -30,7 +30,8 @@ export function AddFruitDialog({ fruits, onAdd, onAddCustom, onClose }: Props) {
       (f) =>
         f.name_de.toLowerCase().includes(q) ||
         f.name_en.toLowerCase().includes(q) ||
-        f.article_number.includes(q),
+        f.article_number.includes(q) ||
+        f.note.toLowerCase().includes(q),
     )
   }, [fruits, typed])
 

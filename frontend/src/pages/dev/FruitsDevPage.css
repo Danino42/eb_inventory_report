@@ -138,6 +138,26 @@
   border-bottom: none;
 }
 
+/* Last row: "+ Add fruit" across the whole table */
+.fruit-table__add {
+  padding: 0 !important;
+  border-top: 1px solid var(--border);
+}
+
+.fruit-table__add button {
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  background: none;
+  color: var(--text-strong);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fruit-table__add button:hover {
+  background: var(--hover);
+}
+
 /* Simple view: fixed layout so Fruit and Months get equal halves */
 .fruit-table--simple {
   table-layout: fixed;

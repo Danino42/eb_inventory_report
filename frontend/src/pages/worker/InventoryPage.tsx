@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ApiError } from '../../api/client'
-import { listFruits } from '../../api/fruits'
+import { Link, useNavigate } from 'react-router'
+import { ApiError, isTemporaryFailure } from '../../api/client'
 import { sendReport, type InventoryReport, type ReportResult } from '../../api/reports'
-import { listWorkers } from '../../api/workers'
 import { FruitIcon } from '../../components/FruitIcon'
+import { enqueueReport } from '../../lib/reportQueue'
+import { newId } from '../../lib/storage'
 import { VARIANTS, VARIANT_LABELS, type FruitWithDerived, type Unit, type Variant } from '../../types/fruit'
 import { AddFruitDialog } from './AddFruitDialog'
 import { EMPTY_IFCO, type IfcoState } from './ifco'
@@ -13,10 +14,42 @@ import { NewFruitForm } from './NewFruitForm'
 import { parseAmount, stepAmount, type StepDelta } from './amount'
 import { QuantityInput } from './QuantityInput'
 import { ReviewDialog } from './ReviewDialog'
+import { clearDraft, draftHasEntries, loadDraft, saveDraft, type Draft } from './draft'
+import { loadFormData } from './offlineData'
 import { defaultReportDate, formatReportDate, fromIsoDate } from './reportDate'
 import './InventoryPage.css'
 
-const OFFLINE_MESSAGE = 'Keine Verbindung zum Server. Bitte später nochmals versuchen.'
+const OFFLINE_MESSAGE = 'Keine Verbindung zum Server und noch keine gespeicherte Früchteliste.'
+const SEND_TIMEOUT_MS = 20_000
+
+/** Empty form for a new report */
+function emptyDraft(): Draft {
+  return {
+    reportId: newId(),
+    reportDate: defaultReportDate(),
+    name: '',
+    amounts: {},
+    added: [],
+    customFruits: [],
+    nextCustomId: 1,
+    ifco: EMPTY_IFCO,
+    hqNotes: '',
+  }
+}
+
+/**
+ * The saved draft is continued automatically if it belongs to today's report. A draft from an
+ * earlier day is not restored silently (the next shift could send old numbers): the worker decides.
+ */
+function initialState(): { start: Draft; stale: Draft | null } {
+  const saved = loadDraft()
+  if (!saved) return { start: emptyDraft(), stale: null }
+  if (saved.reportDate === defaultReportDate()) return { start: saved, stale: null }
+  return { start: emptyDraft(), stale: draftHasEntries(saved, EMPTY_IFCO) ? saved : null }
+}
+
+/** After sending: emailed, saved on the server (no email set up), or waiting on the tablet */
+type SentState = { kind: 'sent' | 'saved'; result: ReportResult; at: Date } | { kind: 'queued'; at: Date }
 
 /** A fruit typed in by hand (not in the catalogue); counted in both Konventionell and Bio */
 function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived {
@@ -43,33 +76,70 @@ export function InventoryPage() {
   const [workers, setWorkers] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  // True when the server is unreachable and the fruit list saved on the tablet is used
+  const [offline, setOffline] = useState(false)
 
-  const [reportDate, setReportDate] = useState(defaultReportDate)
-  const [name, setName] = useState('')
-  const [amounts, setAmounts] = useState<Amounts>({})
+  const [initial] = useState(initialState)
+  // An unsent draft from an earlier day: the worker chooses to continue or discard it
+  const [staleDraft, setStaleDraft] = useState<Draft | null>(initial.stale)
+  const [reportId, setReportId] = useState(initial.start.reportId)
+  const [reportDate, setReportDate] = useState(initial.start.reportDate)
+  const [name, setName] = useState(initial.start.name)
+  const [amounts, setAmounts] = useState<Amounts>(initial.start.amounts)
   // Catalogue fruits added for this report (not in this month's list)
-  const [added, setAdded] = useState<string[]>([])
+  const [added, setAdded] = useState<string[]>(initial.start.added)
   // Free-text fruits that are not in the catalogue at all
-  const [customFruits, setCustomFruits] = useState<FruitWithDerived[]>([])
-  const nextCustomId = useRef(1)
-  const [ifco, setIfco] = useState<IfcoState>(EMPTY_IFCO)
-  const [hqNotes, setHqNotes] = useState('')
+  const [customFruits, setCustomFruits] = useState<FruitWithDerived[]>(initial.start.customFruits)
+  const nextCustomId = useRef(initial.start.nextCustomId)
+  const [ifco, setIfco] = useState<IfcoState>(initial.start.ifco)
+  const [hqNotes, setHqNotes] = useState(initial.start.hqNotes)
   const [dialog, setDialog] = useState<'none' | 'name' | 'add' | 'review'>('none')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
-  // Set after a successful send: shows the confirmation instead of the form
-  const [sent, setSent] = useState<{ result: ReportResult; at: Date } | null>(null)
+  // Set after sending: shows the confirmation instead of the form
+  const [sent, setSent] = useState<SentState | null>(null)
   const dateInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    Promise.all([listFruits(), listWorkers()])
-      .then(([fruits, names]) => {
-        setAllFruits(fruits)
-        setWorkers(names)
+    loadFormData()
+      .then((data) => {
+        setAllFruits(data.fruits)
+        setWorkers(data.workers)
+        setOffline(data.fromCache)
       })
       .catch((e: unknown) => setError(e instanceof ApiError ? e.message : OFFLINE_MESSAGE))
       .finally(() => setLoading(false))
   }, [])
+
+  // Autosave (F-5): every change is written to the tablet right away. Not while the old-draft
+  // question is open (that draft must not be overwritten yet), and not after sending.
+  useEffect(() => {
+    if (staleDraft || sent) return
+    saveDraft({
+      reportId,
+      reportDate,
+      name,
+      amounts,
+      added,
+      customFruits,
+      nextCustomId: nextCustomId.current,
+      ifco,
+      hqNotes,
+    })
+  }, [staleDraft, sent, reportId, reportDate, name, amounts, added, customFruits, ifco, hqNotes])
+
+  /** Puts a draft (restored or new) into the form */
+  function applyDraft(d: Draft) {
+    setReportId(d.reportId)
+    setReportDate(d.reportDate)
+    setName(d.name)
+    setAmounts(d.amounts)
+    setAdded(d.added)
+    setCustomFruits(d.customFruits)
+    nextCustomId.current = d.nextCustomId
+    setIfco(d.ifco)
+    setHqNotes(d.hqNotes)
+  }
 
   const month = fromIsoDate(reportDate).getMonth() + 1
   // The IFCO check is only done in the Monday report (Sunday→Monday night shift)
@@ -116,6 +186,7 @@ export function InventoryPage() {
   /** The form as the backend expects it: one line per amount field, in form order */
   function buildReport(): InventoryReport {
     return {
+      report_id: reportId,
       report_date: reportDate,
       worker: name.trim(),
       lines: shown.flatMap((f) =>
@@ -142,14 +213,23 @@ export function InventoryPage() {
   }
 
   async function send() {
+    const report = buildReport()
     setSending(true)
     setSendError(null)
     try {
-      const result = await sendReport(buildReport())
-      setSent({ result, at: new Date() })
+      const result = await sendReport(report, SEND_TIMEOUT_MS)
+      clearDraft()
+      setSent({ kind: result.delivery, result, at: new Date() })
       setDialog('none')
     } catch (e) {
-      setSendError(e instanceof ApiError ? e.message : 'Keine Verbindung zum Server. Nichts wurde gesendet.')
+      if (isTemporaryFailure(e) && enqueueReport(report)) {
+        // Offline (F-4): the report waits on the tablet and is sent automatically later
+        clearDraft()
+        setSent({ kind: 'queued', at: new Date() })
+        setDialog('none')
+      } else {
+        setSendError(e instanceof ApiError ? e.message : 'Der Bericht konnte nicht gespeichert werden.')
+      }
     } finally {
       setSending(false)
     }
@@ -157,39 +237,92 @@ export function InventoryPage() {
 
   /** Clears everything for the next report (date and lists start fresh) */
   function startNewReport() {
-    setReportDate(defaultReportDate())
-    setName('')
-    setAmounts({})
-    setAdded([])
-    setCustomFruits([])
-    setIfco(EMPTY_IFCO)
-    setHqNotes('')
+    applyDraft(emptyDraft())
     setSent(null)
   }
 
   const { weekday, date } = formatReportDate(reportDate)
+  const navigate = useNavigate()
+
+  if (staleDraft) {
+    const old = formatReportDate(staleDraft.reportDate)
+    return (
+      <div className="inventory sent">
+        <h1>Nicht gesendeter Bericht</h1>
+        <p>
+          <strong>
+            {old.weekday} {old.date}
+          </strong>
+          {staleDraft.name && (
+            <>
+              <br />
+              {staleDraft.name}
+            </>
+          )}
+        </p>
+        <div className="sent__actions">
+          <button
+            type="button"
+            className="btn sent__home"
+            onClick={() => {
+              clearDraft()
+              setStaleDraft(null)
+            }}
+          >
+            Verwerfen
+          </button>
+          <button
+            type="button"
+            className="btn btn--primary sent__new"
+            onClick={() => {
+              applyDraft(staleDraft)
+              setStaleDraft(null)
+            }}
+          >
+            Fortsetzen
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (sent) {
     const time = sent.at.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })
     return (
       <div className="inventory sent">
-        <h1>{sent.result.delivery === 'sent' ? `Gesendet um ${time}` : `Gespeichert um ${time}`}</h1>
+        <h1>
+          {sent.kind === 'sent'
+            ? `Gesendet um ${time}`
+            : sent.kind === 'saved'
+              ? `Gespeichert um ${time}`
+              : `Offline gespeichert um ${time}`}
+        </h1>
         <p>
-          <strong>{sent.result.subject}</strong>
+          <strong>{sent.kind === 'queued' ? `Warenbestand ${weekday} ${date}` : sent.result.subject}</strong>
           <br />
-          {sent.result.delivery === 'sent'
+          {sent.kind === 'sent'
             ? `an ${sent.result.recipients.join(', ')}`
-            : 'E-Mail-Versand ist noch nicht eingerichtet. PDF und CSV liegen auf dem Server.'}
+            : sent.kind === 'saved'
+              ? 'E-Mail-Versand ist noch nicht eingerichtet. PDF und CSV liegen auf dem Server.'
+              : 'Keine Verbindung. Der Bericht wird automatisch gesendet, sobald das Tablet wieder online ist.'}
         </p>
-        <button type="button" className="btn btn--primary sent__new" onClick={startNewReport}>
-          Neuer Bericht
-        </button>
+        <div className="sent__actions">
+          <Link to="/" className="home-link sent__home">
+            ‹ Start
+          </Link>
+          <button type="button" className="btn btn--primary sent__new" onClick={startNewReport}>
+            Neuer Bericht
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="inventory">
+      <button type="button" className="home-link" onClick={() => navigate('/')}>
+        ‹ Start
+      </button>
       <header className="inventory__header">
         <div className="inventory__title">
           <h1>Warenbestand</h1>
@@ -231,6 +364,7 @@ export function InventoryPage() {
           <span className="inventory__bar" aria-hidden="true">
             <span style={{ width: `${fieldCount ? (filledCount / fieldCount) * 100 : 0}%` }} />
           </span>
+          {offline && <span className="inventory__offline">Offline</span>}
         </p>
       )}
 

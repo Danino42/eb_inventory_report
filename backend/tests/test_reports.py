@@ -106,7 +106,26 @@ def test_csv_has_one_row_per_field(outbox: Path) -> None:
     assert rows[3]["quantity"] == "2.5" and rows[3]["custom"] == "1"
 
 
+def test_resent_report_is_not_emailed_twice(outbox: Path) -> None:
+    report = {**REPORT, "report_id": "3f1c2b7e-0d4a-4c1e-9b7a-2a6f0c9d1e55"}
+    first = client.post("/api/reports", json=report).json()
+    again = client.post("/api/reports", json=report).json()
+    assert again == first
+    assert len(list(outbox.glob("*.eml"))) == 1
+    # A different report id is a different report
+    client.post("/api/reports", json={**report, "report_id": "another-report-0001"})
+    assert len(list(outbox.glob("*.eml"))) == 2
+
+
+def test_delivery_info_shows_recipients(outbox: Path) -> None:
+    info = client.get("/api/reports/delivery").json()
+    # The test settings have recipients but no SMTP server: saved only, not emailed
+    assert info == {"recipients": ["office@example.com"], "email_enabled": False}
+
+
 def test_invalid_reports_are_rejected(outbox: Path) -> None:
     negative = {**REPORT, "lines": [line("banana", "Banane", "bio", -1)]}
     assert client.post("/api/reports", json=negative).status_code == 422
     assert client.post("/api/reports", json={**REPORT, "worker": ""}).status_code == 422
+    bad_id = {**REPORT, "report_id": "../../etc/passwd"}
+    assert client.post("/api/reports", json=bad_id).status_code == 422

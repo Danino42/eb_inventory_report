@@ -41,8 +41,13 @@ def deliver(
     """
     folder = settings.outbox_dir
     folder.mkdir(parents=True, exist_ok=True)
-    # Timestamp keeps a second report for the same day from overwriting the first
+    # Timestamp keeps a second report for the same day from overwriting the first; a counter
+    # covers several reports in the same second (e.g. queued reports sent one after another)
     prefix = f"{stem}_{datetime.now():%H%M%S}"
+    n = 2
+    while (folder / f"{prefix}.eml").exists():
+        prefix = f"{stem}_{datetime.now():%H%M%S}_{n}"
+        n += 1
     saved = [f"{prefix}.eml"]
     (folder / saved[0]).write_bytes(msg.as_bytes())
     for name, content, _ in attachments:

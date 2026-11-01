@@ -21,6 +21,8 @@ export interface IfcoReport {
 }
 
 export interface InventoryReport {
+  /** Created once per report on the tablet; resending the same id never emails twice */
+  report_id: string
   /** YYYY-MM-DD */
   report_date: string
   worker: string
@@ -37,7 +39,18 @@ export interface ReportResult {
   files: string[]
 }
 
+export interface DeliveryInfo {
+  recipients: string[]
+  /** false = email sending not set up yet: reports are only saved on the server */
+  email_enabled: boolean
+}
+
+/** Where reports go, to show it before sending */
+export function getDeliveryInfo(): Promise<DeliveryInfo> {
+  return request('/reports/delivery', undefined, { timeoutMs: 5_000 })
+}
+
 /** Creates the A4 PDF + CSV on the server and emails them to the office */
-export function sendReport(report: InventoryReport): Promise<ReportResult> {
-  return request('/reports', { method: 'POST', body: JSON.stringify(report) })
+export function sendReport(report: InventoryReport, timeoutMs?: number): Promise<ReportResult> {
+  return request('/reports', { method: 'POST', body: JSON.stringify(report) }, { timeoutMs })
 }

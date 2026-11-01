@@ -1,0 +1,39 @@
+# Render Blueprint for the backend (FastAPI). In Render: New -> Blueprint -> pick this repo.
+# Demo setup on the free plan: the service sleeps after 15 min idle, and files written at runtime
+# (catalogue edits, outbox) are lost on every redeploy/restart.
+services:
+  - type: web
+    name: eb-inventory-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: ENVIRONMENT
+        value: production
+      # The Vercel frontend (production address and its preview deployments)
+      - key: CORS_ORIGINS
+        value: '["https://eb-inventory-report.vercel.app"]'
+      - key: CORS_ORIGIN_REGEX
+        value: '^https://eb-inventory-report(-[a-z0-9-]+)?\.vercel\.app$'
+      # Fruit icons for the PDF (Render checks out the whole repo here)
+      - key: IMAGES_DIR
+        value: /opt/render/project/src/frontend/src/images
+      # Set these in the Render dashboard (secret, not stored in git)
+      - key: REPORT_RECIPIENTS
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false

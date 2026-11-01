@@ -1,17 +1,18 @@
 import type { Unit } from '../../types/fruit'
 import { KG_WARNING_LIMIT, UNIT_SHORT, isAllowedInput, parseAmount, type StepDelta } from './amount'
+import { RepeatButton } from './RepeatButton'
 
 interface Props {
   value: string
   unit: Unit
   onChange: (value: string) => void
-  /** − / + / +10 : the parent applies it to the latest value, so quick repeated taps all count */
+  /** − / + : the parent applies it to the latest value, so quick repeated taps all count */
   onStep: (delta: StepDelta) => void
   /** Accessible name, e.g. "Apfel Gala Bio" */
   label: string
 }
 
-/** − [ 12 kg ] + +10 : number keypad on tap, ±1 and +10 buttons, warning above 50 kg, never negative */
+/** − [ 12 kg ] + : number keypad on tap, ±1 buttons (hold to repeat), warning above 50 kg, never negative */
 export function QuantityInput({ value, unit, onChange, onStep, label }: Props) {
   const amount = parseAmount(value)
   const warn = unit === 'kg' && amount !== null && amount > KG_WARNING_LIMIT
@@ -19,15 +20,14 @@ export function QuantityInput({ value, unit, onChange, onStep, label }: Props) {
   return (
     <div className={`qty${warn ? ' qty--warn' : ''}`}>
       <div className="qty__row">
-        <button
-          type="button"
+        <RepeatButton
           className="qty__step"
-          onClick={() => onStep(-1)}
+          onStep={() => onStep(-1)}
           disabled={amount === null || amount <= 0}
           aria-label={`${label}: eins weniger`}
         >
           −
-        </button>
+        </RepeatButton>
         <label className="qty__field">
           <input
             value={value}
@@ -41,22 +41,9 @@ export function QuantityInput({ value, unit, onChange, onStep, label }: Props) {
           />
           <span className="qty__unit">{UNIT_SHORT[unit]}</span>
         </label>
-        <button
-          type="button"
-          className="qty__step"
-          onClick={() => onStep(1)}
-          aria-label={`${label}: eins mehr`}
-        >
+        <RepeatButton className="qty__step" onStep={() => onStep(1)} aria-label={`${label}: eins mehr`}>
           +
-        </button>
-        <button
-          type="button"
-          className="qty__step qty__step--ten"
-          onClick={() => onStep(10)}
-          aria-label={`${label}: zehn mehr`}
-        >
-          +10
-        </button>
+        </RepeatButton>
       </div>
       {warn && (
         <p className="qty__warning" role="status">

@@ -27,7 +27,7 @@ def list_fruits(
     category: Category | None = None,
     unit: Unit | None = None,
     q: Annotated[
-        str | None, Query(description="Search in dev name, names and article number")
+        str | None, Query(description="Search in dev name, names, article number and note")
     ] = None,
 ) -> list[Fruit]:
     """All fruits, optionally filtered. month/box_type/category are checked per box type,
@@ -44,6 +44,7 @@ def list_fruits(
             or needle in f.name_en.lower()
             or needle in f.name_de.lower()
             or needle in f.article_number.lower()
+            or needle in f.note.lower()
         ]
     return fruits
 

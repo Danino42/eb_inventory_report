@@ -1,0 +1,10 @@
+.fruit-icon {
+  display: inline-block;
+  flex: none;
+  object-fit: contain;
+}
+
+.fruit-icon--empty {
+  border-radius: 50%;
+  background: var(--surface-2);
+}

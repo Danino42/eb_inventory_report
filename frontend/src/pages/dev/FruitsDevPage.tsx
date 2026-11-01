@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ApiError } from '../../api/client'
 import { listFruits } from '../../api/fruits'
+import { FruitIcon } from '../../components/FruitIcon'
 import { MonthInitials, MonthStrip } from '../../components/MonthStrip'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import {
@@ -275,8 +276,13 @@ export function FruitsDevPage() {
                   {view === 'simple' ? (
                     <>
                       <td className="fruit-table__name">
-                        {f.name_de}
-                        {f.note && <small className="note">{f.note}</small>}
+                        <span className="fruit-name">
+                          <FruitIcon devName={f.dev_name} size={36} />
+                          <span>
+                            {f.name_de}
+                            {f.note && <small className="note">{f.note}</small>}
+                          </span>
+                        </span>
                       </td>
                       <td>
                         <MonthStrip months={f.months} highlight={highlight} size="wide" />
@@ -288,8 +294,13 @@ export function FruitsDevPage() {
                         <code>{f.dev_name}</code>
                       </td>
                       <td className="fruit-table__name">
-                        {f.name_de}
-                        {f.note && <small className="note">{f.note}</small>}
+                        <span className="fruit-name">
+                          <FruitIcon devName={f.dev_name} size={28} />
+                          <span>
+                            {f.name_de}
+                            {f.note && <small className="note">{f.note}</small>}
+                          </span>
+                        </span>
                       </td>
                       <td>{f.name_en}</td>
                       <td>{f.unit}</td>

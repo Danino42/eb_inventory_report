@@ -194,6 +194,13 @@
   width: 100%;
 }
 
+/* Icon + name (and note) side by side */
+.fruit-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .note {
   display: block;
   font-size: 0.78rem;

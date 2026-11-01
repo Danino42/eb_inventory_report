@@ -13,6 +13,10 @@ Category = Literal["box", "addon"]
 
 Month = Annotated[int, Field(ge=1, le=12)]
 
+# Production method the fruit is stocked in (NF-6)
+Variant = Literal["conventional", "bio"]
+VARIANTS: tuple[Variant, ...] = ("conventional", "bio")
+
 
 class BoxAvailability(BaseModel):
     category: Category = "box"
@@ -29,11 +33,21 @@ class Fruit(BaseModel):
     dev_name: str = Field(pattern=r"^[a-z][a-z0-9_]*$", max_length=50)
     name_en: str = Field(min_length=1, max_length=80)
     name_de: str = Field(min_length=1, max_length=80)
+    # Article number in Earlybird's system (NF-12); demo values until the real ones are known
+    article_number: str = Field(default="", max_length=20)
     # Small extra info shown under the name, e.g. the apple varieties behind "apple_2"
     note: str = Field(default="", max_length=200)
     unit: Unit = "kg"
+    # Which stock columns the worker form shows for this fruit
+    variants: list[Variant] = Field(default=["conventional", "bio"], min_length=1)
     # Only box types the fruit is offered in are present
     availability: dict[BoxType, BoxAvailability] = {}
+
+    @field_validator("variants")
+    @classmethod
+    def unique_variants(cls, variants: list[str]) -> list[str]:
+        # Always in the order conventional, bio
+        return [v for v in VARIANTS if v in variants]
 
     @computed_field
     @property

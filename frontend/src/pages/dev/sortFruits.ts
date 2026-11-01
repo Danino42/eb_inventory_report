@@ -1,7 +1,7 @@
 import { BOX_TYPES, type BoxType, type FruitWithDerived } from '../../types/fruit'
 
 /** "months" = the combined month bar (available in at least one box type) */
-export type SortKey = 'dev_name' | 'name_de' | 'name_en' | 'unit' | 'months' | BoxType
+export type SortKey = 'dev_name' | 'article_number' | 'name_de' | 'name_en' | 'unit' | 'months' | BoxType
 export type SortDirection = 'asc' | 'desc'
 export interface Sort {
   key: SortKey

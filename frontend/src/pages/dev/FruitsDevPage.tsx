@@ -12,6 +12,7 @@ import {
   MONTHS_EN_LONG,
   UNITS,
   UNIT_LABELS,
+  VARIANT_LABELS,
   type BoxType,
   type Category,
   type FruitFilters,
@@ -47,6 +48,7 @@ const COLUMNS: Record<View, { key: SortKey; label: string }[]> = {
   ],
   detailed: [
     { key: 'dev_name', label: 'Dev name' },
+    { key: 'article_number', label: 'Art.-Nr.' },
     { key: 'name_de', label: 'Deutsch' },
     { key: 'name_en', label: 'English' },
     { key: 'unit', label: 'Unit' },
@@ -293,6 +295,7 @@ export function FruitsDevPage() {
                       <td>
                         <code>{f.dev_name}</code>
                       </td>
+                      <td>{f.article_number}</td>
                       <td className="fruit-table__name">
                         <span className="fruit-name">
                           <FruitIcon devName={f.dev_name} size={28} />
@@ -303,7 +306,10 @@ export function FruitsDevPage() {
                         </span>
                       </td>
                       <td>{f.name_en}</td>
-                      <td>{f.unit}</td>
+                      <td>
+                        {f.unit}
+                        <small className="note">{f.variants.map((v) => VARIANT_LABELS[v]).join(' · ')}</small>
+                      </td>
                       {BOX_TYPES.map((b) => {
                         const a = f.availability[b]
                         return (

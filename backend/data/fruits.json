@@ -3,8 +3,10 @@
     "dev_name": "banana",
     "name_en": "Banana",
     "name_de": "Banane",
+    "article_number": "1010",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -24,8 +26,10 @@
     "dev_name": "apple_gala",
     "name_en": "Apple Gala",
     "name_de": "Apfel Gala",
+    "article_number": "1020",
     "note": "1. Kl.",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -45,8 +49,10 @@
     "dev_name": "apple_2",
     "name_en": "Apple II",
     "name_de": "Apfel II",
+    "article_number": "1030",
     "note": "Golden / Pinova / Diwa / Braeburn / Pink Rose, 1. Kl.",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -66,8 +72,10 @@
     "dev_name": "pear",
     "name_en": "Pear",
     "name_de": "Birne",
+    "article_number": "1040",
     "note": "Conference / Kaiser Alexander, 1. Kl.",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -87,8 +95,10 @@
     "dev_name": "clementine",
     "name_en": "Clementine",
     "name_de": "Clementine",
+    "article_number": "1050",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -108,8 +118,10 @@
     "dev_name": "orange",
     "name_en": "Orange",
     "name_de": "Orange",
+    "article_number": "1060",
     "note": "Blond / Blutorangen",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -129,8 +141,10 @@
     "dev_name": "nectarine",
     "name_en": "Nectarine",
     "name_de": "Nektarine",
+    "article_number": "1070",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -150,8 +164,10 @@
     "dev_name": "peach",
     "name_en": "Peach",
     "name_de": "Pfirsich",
+    "article_number": "1080",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -171,8 +187,10 @@
     "dev_name": "plum",
     "name_en": "Plum",
     "name_de": "Pflaume",
+    "article_number": "1090",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "box",
@@ -192,8 +210,10 @@
     "dev_name": "kiwi",
     "name_en": "Kiwi",
     "name_de": "Kiwi",
+    "article_number": "1100",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -213,8 +233,10 @@
     "dev_name": "kaki",
     "name_en": "Persimmon",
     "name_de": "Kaki",
+    "article_number": "1110",
     "note": "",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -234,8 +256,10 @@
     "dev_name": "damson",
     "name_en": "Damson",
     "name_de": "Zwetschge",
+    "article_number": "1120",
     "note": "Standard: 500 g",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -255,8 +279,10 @@
     "dev_name": "apricot",
     "name_en": "Apricot",
     "name_de": "Aprikose",
+    "article_number": "1130",
     "note": "Standard: 500 g",
     "unit": "kg",
+    "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -276,8 +302,10 @@
     "dev_name": "lemon",
     "name_en": "Lemon",
     "name_de": "Zitrone",
+    "article_number": "2010",
     "note": "",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -297,8 +325,10 @@
     "dev_name": "lime",
     "name_en": "Lime",
     "name_de": "Limette",
+    "article_number": "2020",
     "note": "",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -318,8 +348,10 @@
     "dev_name": "watermelon_mini",
     "name_en": "Mini Watermelon",
     "name_de": "Wassermelone Mini",
+    "article_number": "2030",
     "note": "",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -339,8 +371,10 @@
     "dev_name": "melon_charentais",
     "name_en": "Charentais Melon",
     "name_de": "Melone Charentais",
+    "article_number": "2040",
     "note": "",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -360,8 +394,10 @@
     "dev_name": "raspberry",
     "name_en": "Raspberry",
     "name_de": "Himbeere",
+    "article_number": "2050",
     "note": "CH, 250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -381,8 +417,10 @@
     "dev_name": "strawberry",
     "name_en": "Strawberry",
     "name_de": "Erdbeere",
+    "article_number": "2060",
     "note": "CH, 250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -402,8 +440,10 @@
     "dev_name": "blueberry",
     "name_en": "Blueberry",
     "name_de": "Blaubeere",
+    "article_number": "2070",
     "note": "CH, 250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -423,8 +463,10 @@
     "dev_name": "blackberry",
     "name_en": "Blackberry",
     "name_de": "Brombeere",
+    "article_number": "2080",
     "note": "CH, 250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -444,8 +486,10 @@
     "dev_name": "cherry",
     "name_en": "Cherry",
     "name_de": "Kirsche",
+    "article_number": "2090",
     "note": "CH, 250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -465,8 +509,10 @@
     "dev_name": "grapes_seedless",
     "name_en": "Seedless Grapes",
     "name_de": "Trauben kernenlos",
+    "article_number": "2100",
     "note": "500 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -486,8 +532,10 @@
     "dev_name": "fig",
     "name_en": "Figs",
     "name_de": "Feigen",
+    "article_number": "2110",
     "note": "Schale à 5 Stk.",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -507,8 +555,10 @@
     "dev_name": "lychee",
     "name_en": "Lychee",
     "name_de": "Litchi",
+    "article_number": "2120",
     "note": "250 g",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -528,8 +578,10 @@
     "dev_name": "dragon_fruit",
     "name_en": "Dragon Fruit",
     "name_de": "Drachenfrucht",
+    "article_number": "2130",
     "note": "Bio",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -549,8 +601,10 @@
     "dev_name": "mango",
     "name_en": "Mango",
     "name_de": "Mango",
+    "article_number": "2140",
     "note": "Bio",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -570,8 +624,10 @@
     "dev_name": "ginger",
     "name_en": "Ginger",
     "name_de": "Ingwer",
+    "article_number": "2150",
     "note": "",
     "unit": "pcs",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -591,8 +647,10 @@
     "dev_name": "dried_fruit",
     "name_en": "Dried Fruit",
     "name_de": "Trockenfrüchte",
+    "article_number": "2160",
     "note": "Datteln / Aprikosen / Bergfeigen / Nuss- / Sport- / Xundmix",
     "unit": "kg",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",
@@ -612,8 +670,10 @@
     "dev_name": "peppermint",
     "name_en": "Peppermint",
     "name_de": "Pfefferminze",
+    "article_number": "2170",
     "note": "div. Kräuter Bund",
     "unit": "kg",
+    "variants": ["bio"],
     "availability": {
       "standard": {
         "category": "addon",

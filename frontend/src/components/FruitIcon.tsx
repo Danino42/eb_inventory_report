@@ -12,5 +12,5 @@ export function FruitIcon({ devName, size = 32 }: Props) {
   const url = fruitIconUrl(devName)
   const style = { width: size, height: size }
   if (!url) return <span className="fruit-icon fruit-icon--empty" style={style} aria-hidden="true" />
-  return <img className="fruit-icon" src={url} style={style} alt="" loading="lazy" decoding="async" />
+  return <img className="fruit-icon" src={url} style={style} alt="" decoding="async" />
 }

@@ -59,6 +59,22 @@ def test_search(client: TestClient) -> None:
     assert names(client.get("/api/fruits", params={"q": "apfel"})) == {"apple_gala", "apple_2"}
 
 
+def test_variants_and_article_number(client: TestClient) -> None:
+    banana = client.get("/api/fruits/banana").json()
+    assert banana["variants"] == ["conventional", "bio"]
+    assert banana["article_number"] == "1010"
+    # Add-ons like lemons are Bio only (crossed out under "Konventionell" on the paper form)
+    assert client.get("/api/fruits/lemon").json()["variants"] == ["bio"]
+    assert names(client.get("/api/fruits", params={"q": "2010"})) == {"lemon"}
+
+
+def test_variants_are_ordered_and_required(client: TestClient) -> None:
+    fruit = {**NEW_FRUIT, "variants": ["bio", "conventional", "bio"]}
+    assert client.post("/api/fruits", json=fruit).json()["variants"] == ["conventional", "bio"]
+    empty = {**NEW_FRUIT, "dev_name": "quince_2", "variants": []}
+    assert client.post("/api/fruits", json=empty).status_code == 422
+
+
 def test_derived_fields(client: TestClient) -> None:
     kaki = client.get("/api/fruits/kaki").json()
     assert kaki["box_types"] == ["standard", "spezial", "bio"]

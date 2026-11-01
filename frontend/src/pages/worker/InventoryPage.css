@@ -1,0 +1,426 @@
+/* Worker form, made for a tablet (touch, gloves): large targets, few elements */
+
+.inventory {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+  display: grid;
+  gap: 16px;
+}
+
+.inventory__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.inventory__title {
+  display: grid;
+  gap: 2px;
+}
+
+.inventory__title h1 {
+  font-size: 1.6rem;
+}
+
+.inventory__date {
+  justify-self: start;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  font-size: 1.05rem;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: underline dotted var(--muted);
+  text-underline-offset: 4px;
+}
+
+.inventory__name {
+  min-height: 52px;
+  min-width: 180px;
+  padding: 8px 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inventory__name.is-empty {
+  border-color: var(--text-strong);
+  border-width: 2px;
+}
+
+.inventory__progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.inventory__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.inventory__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+
+/* Fruit list: fruit | Konventionell | Bio */
+.stock {
+  --stock-cols: minmax(180px, 1fr) 230px 230px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.stock__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--stock-cols);
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.stock__head span:not(:first-child) {
+  text-align: center;
+}
+
+.stock__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stock__row {
+  display: grid;
+  grid-template-columns: var(--stock-cols);
+  align-items: start;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stock__fruit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+}
+
+.stock__name {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.stock__meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stock__cell {
+  display: flex;
+  justify-content: center;
+}
+
+/* Last row: type a fruit that is not in the catalogue */
+.stock__row--new {
+  align-items: center;
+  background: var(--hover);
+}
+
+.stock__new-form {
+  grid-column: 2 / -1;
+}
+
+.new-fruit {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.new-fruit input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  font-size: 1.05rem;
+}
+
+.new-fruit__unit button {
+  min-width: 56px;
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.new-fruit .btn {
+  min-height: 52px;
+  padding: 6px 18px;
+  font-size: 1rem;
+}
+
+.stock__add {
+  width: 100%;
+  min-height: 56px;
+  border: none;
+  background: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.stock__add:hover {
+  background: var(--hover);
+}
+
+/* − [ 12 kg ] + */
+.qty {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.qty__row {
+  display: flex;
+  align-items: stretch;
+  height: 52px;
+}
+
+.qty__step {
+  width: 52px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.qty__step:first-child {
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.qty__step:last-child {
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.qty__step:active:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.qty__step:disabled {
+  color: var(--border-strong);
+  cursor: default;
+}
+
+.qty__field {
+  position: relative;
+  display: flex;
+  width: 112px;
+}
+
+.qty__field input {
+  width: 100%;
+  min-height: 0;
+  padding: 0 34px 0 10px;
+  border-width: 1px 0;
+  border-radius: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.qty__unit {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.qty--warn .qty__field input {
+  background: var(--warn-bg);
+}
+
+.qty__warning {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--warn);
+}
+
+/* Pop-ups (name picker, add fruit) */
+.sheet {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.sheet::backdrop {
+  background: var(--backdrop);
+}
+
+.sheet__body {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.sheet__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.sheet__search {
+  min-height: 48px;
+  font-size: 1.05rem;
+}
+
+.name-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.name-grid__button {
+  min-height: 52px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.name-grid__button.is-active {
+  background: var(--text-strong);
+  border-color: var(--text-strong);
+  color: var(--on-strong);
+}
+
+.name-other {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.name-other label {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.name-other input {
+  min-height: 48px;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.name-other .btn {
+  min-height: 48px;
+}
+
+.add-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 55dvh;
+  overflow-y: auto;
+}
+
+/* Catalogue entries: the whole line is the button */
+.add-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 4px 8px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.add-list__item:hover {
+  background: var(--hover);
+}
+
+.add-list__name {
+  flex: 1;
+  font-size: 1.05rem;
+}
+
+/* Free-text entry: always the first line while typing */
+.add-list__custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--hover);
+}
+
+.add-list__custom .add-list__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.add-list__custom .btn {
+  flex: none;
+  min-height: 44px;
+  min-width: 80px;
+}
+
+/* Phones / narrow portrait: amounts move under the fruit name */
+@media (max-width: 640px) {
+  .stock {
+    --stock-cols: 1fr 1fr;
+  }
+
+  .stock__head span:first-child {
+    display: none;
+  }
+
+  .stock__fruit,
+  .stock__new-form {
+    grid-column: 1 / -1;
+  }
+}

@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Fruit catalogue (seasonal calendar), edited through /api/fruits
     fruits_file: Path = BACKEND_DIR / "data" / "fruits.json"
 
+    # Names offered in the worker form's name picker
+    workers_file: Path = BACKEND_DIR / "data" / "workers.json"
+
 
 @lru_cache
 def get_settings() -> Settings:

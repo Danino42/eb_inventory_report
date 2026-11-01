@@ -259,6 +259,19 @@
   grid-column: 1 / -1;
 }
 
+.editor__variants {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.editor__variants .segmented {
+  justify-self: start;
+  color: var(--text);
+}
+
 .editor__box {
   margin: 0;
   padding: 8px 12px 12px;
@@ -300,31 +313,6 @@
   height: 18px;
   min-height: 0;
   accent-color: var(--text-strong);
-}
-
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.segmented button {
-  min-height: 30px;
-  padding: 2px 12px;
-  border: none;
-  background: var(--bg);
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.segmented button + button {
-  border-left: 1px solid var(--border-strong);
-}
-
-.segmented button.is-active {
-  background: var(--text-strong);
-  color: var(--on-strong);
 }
 
 /* Month toggles stay finger-sized for the touchscreen */

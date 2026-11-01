@@ -9,6 +9,8 @@ import {
   MONTHS_EN,
   UNITS,
   UNIT_LABELS,
+  VARIANTS,
+  VARIANT_LABELS,
   type BoxAvailability,
   type BoxType,
   type Fruit,
@@ -26,8 +28,10 @@ const EMPTY_FRUIT: Fruit = {
   dev_name: '',
   name_en: '',
   name_de: '',
+  article_number: '',
   note: '',
   unit: 'kg',
+  variants: ['conventional', 'bio'],
   availability: {},
 }
 
@@ -50,8 +54,17 @@ function toDevName(name: string): string {
 
 /** Strips derived fields (box_types, months) the API adds, so only stored fields are sent back */
 function toDraft(fruit: Fruit): Fruit {
-  const { dev_name, name_en, name_de, note, unit, availability } = fruit
-  return { dev_name, name_en, name_de, note, unit, availability: structuredClone(availability) }
+  const { dev_name, name_en, name_de, article_number, note, unit, variants, availability } = fruit
+  return {
+    dev_name,
+    name_en,
+    name_de,
+    article_number,
+    note,
+    unit,
+    variants: [...variants],
+    availability: structuredClone(availability),
+  }
 }
 
 export function FruitEditor({ fruit, onClose, onSaved }: Props) {
@@ -70,6 +83,16 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
 
   function set<K extends keyof Fruit>(key: K, value: Fruit[K]) {
     setDraft((d) => ({ ...d, [key]: value }))
+  }
+
+  function toggleVariant(variant: Fruit['variants'][number]) {
+    setDraft((d) => {
+      const has = d.variants.includes(variant)
+      // At least one of Konventionell / Bio must stay selected
+      if (has && d.variants.length === 1) return d
+      const variants = has ? d.variants.filter((v) => v !== variant) : [...d.variants, variant]
+      return { ...d, variants: VARIANTS.filter((v) => variants.includes(v)) }
+    })
   }
 
   function setEnglishName(name: string) {
@@ -191,6 +214,30 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
               ))}
             </select>
           </label>
+          <label>
+            Article number
+            <input
+              value={draft.article_number}
+              onChange={(e) => set('article_number', e.target.value)}
+              inputMode="numeric"
+            />
+          </label>
+          <div className="editor__variants">
+            <span>Stocked as</span>
+            <div className="segmented" role="group" aria-label="Stocked as">
+              {VARIANTS.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={draft.variants.includes(v)}
+                  className={draft.variants.includes(v) ? 'is-active' : ''}
+                  onClick={() => toggleVariant(v)}
+                >
+                  {VARIANT_LABELS[v]}
+                </button>
+              ))}
+            </div>
+          </div>
           <label className="editor__wide">
             Note
             <input value={draft.note} onChange={(e) => set('note', e.target.value)} />

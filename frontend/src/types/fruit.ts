@@ -27,6 +27,15 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   addon: 'Add-on',
 }
 
+// Production method a fruit is stocked in (NF-6)
+export const VARIANTS = ['conventional', 'bio'] as const
+export type Variant = (typeof VARIANTS)[number]
+
+export const VARIANT_LABELS: Record<Variant, string> = {
+  conventional: 'Konventionell',
+  bio: 'Bio',
+}
+
 /** Index 0 = January (month 1) */
 export const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 export const MONTHS_EN_LONG = [
@@ -44,8 +53,12 @@ export interface Fruit {
   dev_name: string
   name_en: string
   name_de: string
+  /** Article number in Earlybird's system; demo values for now */
+  article_number: string
   note: string
   unit: Unit
+  /** Which stock columns (Konventionell / Bio) the worker form shows */
+  variants: Variant[]
   availability: Partial<Record<BoxType, BoxAvailability>>
 }
 

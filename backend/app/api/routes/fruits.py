@@ -26,7 +26,9 @@ def list_fruits(
     box_type: BoxType | None = None,
     category: Category | None = None,
     unit: Unit | None = None,
-    q: Annotated[str | None, Query(description="Search in dev, English and German name")] = None,
+    q: Annotated[
+        str | None, Query(description="Search in dev name, names and article number")
+    ] = None,
 ) -> list[Fruit]:
     """All fruits, optionally filtered. month/box_type/category are checked per box type,
     e.g. month=10&box_type=bio returns what the Bio box offers in October."""
@@ -38,7 +40,10 @@ def list_fruits(
         fruits = [
             f
             for f in fruits
-            if needle in f.dev_name or needle in f.name_en.lower() or needle in f.name_de.lower()
+            if needle in f.dev_name
+            or needle in f.name_en.lower()
+            or needle in f.name_de.lower()
+            or needle in f.article_number.lower()
         ]
     return fruits
 

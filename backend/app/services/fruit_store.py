@@ -10,7 +10,8 @@ from pydantic import TypeAdapter
 from app.models.fruit import Fruit
 
 _fruit_list = TypeAdapter(list[Fruit])
-_MONTHS_BLOCK = re.compile(r'"months": \[([\d,\s]*)\]')
+# Short lists (months, variants) that json.dumps would spread over many lines
+_SHORT_LIST = re.compile(r'"(months|variants)": \[([^\[\]{}]*)\]')
 
 
 class FruitNotFoundError(Exception):
@@ -81,9 +82,14 @@ class FruitStore:
         # Computed fields (box_types, months) are derived, so they are not stored
         data = [f.model_dump(exclude={"box_types", "months"}) for f in fruits]
         text = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
-        # Keep month lists on one line, so the file stays short and git diffs stay readable
-        text = _MONTHS_BLOCK.sub(
-            lambda m: '"months": [' + ", ".join(re.findall(r"\d+", m.group(1))) + "]", text
+        # Keep short lists on one line, so the file stays short and git diffs stay readable
+        text = _SHORT_LIST.sub(
+            lambda m: (
+                f'"{m.group(1)}": ['
+                + ", ".join(i.strip() for i in m.group(2).split(",") if i.strip())
+                + "]"
+            ),
+            text,
         )
         self.path.parent.mkdir(parents=True, exist_ok=True)
         fd, tmp = tempfile.mkstemp(dir=self.path.parent, suffix=".tmp")

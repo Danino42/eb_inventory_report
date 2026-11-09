@@ -7,14 +7,19 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.routes.reports import get_report_log
 from app.core.config import Settings, get_settings
 from app.main import app
+from app.services.report_log import MongoReportLog
 
 
 @pytest.fixture
 def outbox(tmp_path: Path):
-    """Reports go to a temporary outbox and are never really emailed."""
-    settings = Settings(report_recipients=["office@example.com"], smtp_host="", outbox_dir=tmp_path)
+    """Reports go to a temporary outbox and are never really emailed (nor stored in a real
+    database, even if the local .env has a MONGODB_URI)."""
+    settings = Settings(
+        report_recipients=["office@example.com"], smtp_host="", outbox_dir=tmp_path, mongodb_uri=""
+    )
     app.dependency_overrides[get_settings] = lambda: settings
     yield tmp_path
     app.dependency_overrides.clear()
@@ -115,6 +120,23 @@ def test_resent_report_is_not_emailed_twice(outbox: Path) -> None:
     # A different report id is a different report
     client.post("/api/reports", json={**report, "report_id": "another-report-0001"})
     assert len(list(outbox.glob("*.eml"))) == 2
+
+
+def test_reports_are_kept_in_mongodb(outbox: Path, mongo_db) -> None:
+    app.dependency_overrides[get_report_log] = lambda: MongoReportLog(mongo_db["reports"])
+    report = {**REPORT, "report_id": "3f1c2b7e-0d4a-4c1e-9b7a-2a6f0c9d1e55"}
+    first = client.post("/api/reports", json=report).json()
+    # Also after a server restart (empty outbox), a resend is recognised via the database
+    for file in outbox.iterdir():
+        file.unlink()
+    assert client.post("/api/reports", json=report).json() == first
+    assert list(outbox.glob("*.eml")) == []
+
+    saved = mongo_db["reports"].find_one({"_id": report["report_id"]})
+    assert (saved["report_date"], saved["worker"]) == ("2026-11-02", "Daniel")
+    assert len(saved["lines"]) == 4 and saved["ifco"]["returned"] == 14
+    assert saved["result"]["subject"] == "Warenbestände Nov 2 Montag"
+    assert saved["sent_at"].tzinfo is not None
 
 
 def test_delivery_info_shows_recipients(outbox: Path) -> None:

@@ -1,15 +1,28 @@
+import logging
 import smtplib
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pymongo.errors import PyMongoError
 
 from app.core.config import Settings, get_settings
 from app.models.report import DeliveryInfo, InventoryReport, ReportResult
+from app.services.database import get_database
 from app.services.mailer import build_message, deliver
 from app.services.report_documents import build_csv, build_pdf, email_body, email_subject, file_stem
+from app.services.report_log import FileReportLog, MongoReportLog, ReportLog
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+def get_report_log(settings: Annotated[Settings, Depends(get_settings)]) -> ReportLog:
+    # MongoDB on the server (lasting history), small marker files in the outbox locally
+    if settings.mongodb_uri:
+        return MongoReportLog(get_database()["reports"])
+    return FileReportLog(settings.outbox_dir / "sent_ids")
 
 
 @router.get("/delivery")
@@ -23,18 +36,17 @@ def delivery_info(settings: Annotated[Settings, Depends(get_settings)]) -> Deliv
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def send_report(
-    report: InventoryReport, settings: Annotated[Settings, Depends(get_settings)]
+    report: InventoryReport,
+    settings: Annotated[Settings, Depends(get_settings)],
+    log: Annotated[ReportLog, Depends(get_report_log)],
 ) -> ReportResult:
     """Turns a filled-in form into an A4 PDF + CSV and emails both to the office.
 
     The tablet retries reports that could not be sent (offline). If the first attempt did get
     through but the answer was lost, the retry has the same report_id and is not sent twice.
     """
-    done_marker = (
-        settings.outbox_dir / "sent_ids" / f"{report.report_id}.json" if report.report_id else None
-    )
-    if done_marker and done_marker.exists():
-        return ReportResult.model_validate_json(done_marker.read_text(encoding="utf-8"))
+    if report.report_id and (earlier := log.find(report.report_id)):
+        return earlier
 
     stem = file_stem(report)
     attachments = [
@@ -53,7 +65,9 @@ def send_report(
     result = ReportResult(
         delivery=delivery, recipients=settings.report_recipients, subject=subject, files=files
     )
-    if done_marker:
-        done_marker.parent.mkdir(parents=True, exist_ok=True)
-        done_marker.write_text(result.model_dump_json(), encoding="utf-8")
+    try:
+        log.add(report, result, datetime.now(UTC))
+    except (PyMongoError, OSError):
+        # The email is out: answering with an error now would only make the tablet send it again
+        logger.exception("Report %s was sent but could not be logged", report.report_id)
     return result

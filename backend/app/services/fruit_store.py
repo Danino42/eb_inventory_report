@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from app.models.fruit import Fruit
-from app.services.json_store import ItemExistsError, ItemNotFoundError, JsonListStore
+from app.services.item_store import ItemExistsError, ItemNotFoundError
+from app.services.json_store import JsonListStore
 
 # Kept under these names so existing imports keep working
 FruitNotFoundError = ItemNotFoundError

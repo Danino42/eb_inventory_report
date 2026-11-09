@@ -6,18 +6,22 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.config import get_settings
 from app.models.order_article import OrderArticle
-from app.services.json_store import ItemExistsError, ItemNotFoundError, JsonListStore
+from app.services.database import open_list_store
+from app.services.item_store import ItemExistsError, ItemNotFoundError, ItemStore
+from app.services.json_store import JsonListStore
 
 router = APIRouter(prefix="/order-articles", tags=["order articles"])
 
 
 @lru_cache
-def get_order_article_store() -> JsonListStore[OrderArticle]:
-    # One shared store, so its lock serialises concurrent writes to the file
-    return JsonListStore(get_settings().order_articles_file, OrderArticle, key="id")
+def get_order_article_store() -> ItemStore[OrderArticle]:
+    # MongoDB on the server, data/order_articles.json locally. One shared store, so with the
+    # file its lock serialises concurrent writes.
+    file_store = JsonListStore(get_settings().order_articles_file, OrderArticle, key="id")
+    return open_list_store("order_articles", file_store)
 
 
-Store = Annotated[JsonListStore[OrderArticle], Depends(get_order_article_store)]
+Store = Annotated[ItemStore[OrderArticle], Depends(get_order_article_store)]
 
 
 def _not_found(article_id: str) -> HTTPException:

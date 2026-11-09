@@ -8,14 +8,19 @@ from app.api.routes.fruits import get_fruit_store
 from app.core.config import get_settings
 from app.main import app
 from app.services.fruit_store import FruitStore
+from app.services.mongo_store import MongoListStore
 
 
-@pytest.fixture
-def client(tmp_path: Path):
-    """Runs the API against a copy of the real catalogue, so tests never touch data/fruits.json."""
+@pytest.fixture(params=["files", "mongodb"])
+def client(request, tmp_path: Path, mongo_db):
+    """Runs the API against a copy of the real catalogue, so tests never touch data/fruits.json.
+    Every test runs twice: with the JSON file, and with MongoDB filled from that file."""
     data_file = tmp_path / "fruits.json"
     shutil.copy(get_settings().fruits_file, data_file)
-    app.dependency_overrides[get_fruit_store] = lambda: FruitStore(data_file)
+    store = FruitStore(data_file)
+    if request.param == "mongodb":
+        store = MongoListStore.seeded_from(mongo_db["fruits"], store)
+    app.dependency_overrides[get_fruit_store] = lambda: store
     yield TestClient(app)
     app.dependency_overrides.clear()
 

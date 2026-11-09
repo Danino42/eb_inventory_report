@@ -1,11 +1,14 @@
 # Render Blueprint for the backend (FastAPI). In Render: New -> Blueprint -> pick this repo.
-# Demo setup on the free plan: the service sleeps after 15 min idle, and files written at runtime
-# (catalogue edits, outbox) are lost on every redeploy/restart.
+# Demo setup on the free plan: the service sleeps after 15 min idle, and its disk is wiped on every
+# restart/redeploy. So everything that must last (fruit catalogue, order articles, sent reports)
+# is kept in MongoDB Atlas; the outbox copies of the emails on the disk are only temporary.
 services:
   - type: web
     name: eb-inventory-backend
     runtime: python
     plan: free
+    # Closest to Zürich, and next to the MongoDB Atlas cluster (AWS Frankfurt)
+    region: frankfurt
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -16,6 +19,9 @@ services:
         value: "3.13.1"
       - key: ENVIRONMENT
         value: production
+      # Swiss time for the server clock ("Erstellt" on the PDF, email date)
+      - key: TZ
+        value: Europe/Zurich
       # The Vercel frontend (production address and its preview deployments)
       - key: CORS_ORIGINS
         value: '["https://eb-inventory-report.vercel.app"]'
@@ -24,7 +30,12 @@ services:
       # Fruit icons for the PDF (Render checks out the whole repo here)
       - key: IMAGES_DIR
         value: /opt/render/project/src/frontend/src/images
+      - key: MONGODB_DB
+        value: eb_inventory
       # Set these in the Render dashboard (secret, not stored in git)
+      # MONGODB_URI: the mongodb+srv://... connection string from Atlas (Connect -> Drivers)
+      - key: MONGODB_URI
+        sync: false
       - key: REPORT_RECIPIENTS
         sync: false
       - key: SMTP_HOST

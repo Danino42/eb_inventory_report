@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     # Names offered in the worker form's name picker
     workers_file: Path = BACKEND_DIR / "data" / "workers.json"
 
+    # MongoDB, e.g. a free MongoDB Atlas cluster. If set, the fruit catalogue, order articles and
+    # sent reports are kept there for good (the JSON files above only fill it on first start).
+    # If empty, everything stays in the JSON files and the outbox folder.
+    mongodb_uri: str = ""
+    mongodb_db: str = "eb_inventory"
+
     # Inventory reports: who receives the PDF + CSV email
     report_recipients: list[str] = []
     # SMTP for sending; if smtp_host is empty, emails are only saved to outbox_dir (as .eml)

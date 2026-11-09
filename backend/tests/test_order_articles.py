@@ -9,14 +9,18 @@ from app.core.config import get_settings
 from app.main import app
 from app.models.order_article import OrderArticle
 from app.services.json_store import JsonListStore
+from app.services.mongo_store import MongoListStore
 
 
-@pytest.fixture
-def client(tmp_path: Path):
-    """Runs against a copy of the mock data, so tests never change data/order_articles.json."""
+@pytest.fixture(params=["files", "mongodb"])
+def client(request, tmp_path: Path, mongo_db):
+    """Runs against a copy of the mock data, so tests never change data/order_articles.json.
+    Every test runs twice: with the JSON file, and with MongoDB filled from that file."""
     data_file = tmp_path / "order_articles.json"
     shutil.copy(get_settings().order_articles_file, data_file)
     store = JsonListStore(data_file, OrderArticle, key="id")
+    if request.param == "mongodb":
+        store = MongoListStore.seeded_from(mongo_db["order_articles"], store)
     app.dependency_overrides[get_order_article_store] = lambda: store
     yield TestClient(app)
     app.dependency_overrides.clear()

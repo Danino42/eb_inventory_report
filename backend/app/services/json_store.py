@@ -7,16 +7,10 @@ from threading import Lock
 
 from pydantic import BaseModel, TypeAdapter
 
+from app.services.item_store import ItemExistsError, ItemNotFoundError
+
 # Short lists (months, variants) that json.dumps would spread over many lines
 _SHORT_LIST = re.compile(r'"(months|variants)": \[([^\[\]{}]*)\]')
-
-
-class ItemNotFoundError(Exception):
-    pass
-
-
-class ItemExistsError(Exception):
-    pass
 
 
 class JsonListStore[T: BaseModel]:
@@ -28,6 +22,7 @@ class JsonListStore[T: BaseModel]:
 
     def __init__(self, path: Path, model: type[T], key: str, exclude: set[str] | None = None):
         self.path = path
+        self.model = model
         self.key = key
         # Derived (computed) fields that must not be written to the file
         self.exclude = exclude or set()

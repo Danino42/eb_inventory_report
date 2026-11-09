@@ -5,18 +5,21 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.config import get_settings
 from app.models.fruit import BoxType, Category, Fruit, Unit
+from app.services.database import open_list_store
 from app.services.fruit_store import FruitExistsError, FruitNotFoundError, FruitStore
+from app.services.item_store import ItemStore
 
 router = APIRouter(prefix="/fruits", tags=["fruits"])
 
 
 @lru_cache
-def get_fruit_store() -> FruitStore:
-    # One shared store, so its lock serialises concurrent writes to the file
-    return FruitStore(get_settings().fruits_file)
+def get_fruit_store() -> ItemStore[Fruit]:
+    # MongoDB on the server, data/fruits.json locally. One shared store, so with the file its
+    # lock serialises concurrent writes.
+    return open_list_store("fruits", FruitStore(get_settings().fruits_file))
 
 
-Store = Annotated[FruitStore, Depends(get_fruit_store)]
+Store = Annotated[ItemStore[Fruit], Depends(get_fruit_store)]
 
 
 @router.get("")

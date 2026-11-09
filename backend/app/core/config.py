@@ -9,7 +9,11 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     """App settings, read from environment variables or a .env file in backend/."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    # Empty values count as not set (e.g. REPORT_RECIPIENTS left blank in the Render dashboard),
+    # so the default applies instead of the server failing to start
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore", env_ignore_empty=True
+    )
 
     app_name: str = "Earlybird Inventory Report API"
     environment: str = "development"

@@ -82,6 +82,16 @@ def test_cors_origin_pattern_for_hosted_frontend() -> None:
     assert "access-control-allow-origin" not in response.headers
 
 
+def test_blank_settings_fall_back_to_defaults(monkeypatch) -> None:
+    # Secrets left empty in the Render dashboard must not stop the server from starting
+    for name in ("REPORT_RECIPIENTS", "CORS_ORIGINS", "SMTP_PORT", "MONGODB_URI"):
+        monkeypatch.setenv(name, "")
+    settings = Settings(_env_file=None)
+    assert settings.report_recipients == []
+    assert settings.cors_origins == ["http://localhost:5173", "http://localhost:4173"]
+    assert (settings.smtp_port, settings.mongodb_uri) == (587, "")
+
+
 def test_cors_allows_vite_dev_server() -> None:
     response = client.options(
         "/api/health",

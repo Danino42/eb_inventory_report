@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { getDeliveryInfo, type DeliveryInfo, type InventoryReport, type StockLine } from '../../api/reports'
 import { readJson, writeJson } from '../../lib/storage'
 import { FruitIcon } from '../../components/FruitIcon'
 import ifcoIcon from '../../images/ifco.png'
-import { VARIANT_LABELS, type Variant } from '../../types/fruit'
+import { VARIANTS, VARIANT_LABELS, type Variant } from '../../types/fruit'
 import { UNIT_SHORT, formatAmount } from './amount'
 import { formatReportDate } from './reportDate'
 
@@ -27,9 +27,31 @@ function byFruit(lines: StockLine[]) {
   return [...groups.values()]
 }
 
+// How many fruit columns fit side by side. Tuned so that even a summer list (~25 fruits)
+// fits on one screen of the 8" Galaxy Tab Active5 (about 960x600) as well as on 10" tablets.
+function columnCount(): number {
+  if (window.innerWidth >= 900) return 3
+  if (window.innerWidth >= 520) return 2
+  return 1
+}
+
+function subscribeResize(listener: () => void) {
+  window.addEventListener('resize', listener)
+  return () => window.removeEventListener('resize', listener)
+}
+
+/** Splits the fruits into columns that read top to bottom, like the paper form */
+function toColumns<T>(items: T[], columns: number): T[][] {
+  const perColumn = Math.max(1, Math.ceil(items.length / columns))
+  const result: T[][] = []
+  for (let i = 0; i < items.length; i += perColumn) result.push(items.slice(i, i + perColumn))
+  return result
+}
+
 /** One-screen overview before sending; empty fields in a soft orange */
 export function ReviewDialog({ report, sending, error, onSend, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const columns = useSyncExternalStore(subscribeResize, columnCount)
   const [delivery, setDelivery] = useState<DeliveryInfo | null>(() => readJson(DELIVERY_KEY, null))
 
   useEffect(() => {
@@ -71,28 +93,52 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
           </p>
         </header>
 
-        <ul className="review__grid">
-          {byFruit(report.lines).map((lines) => (
-            <li key={lines[0].dev_name} className="review__fruit">
-              <span className="review__name">
-                <FruitIcon devName={lines[0].dev_name} size={26} />
-                <span>{lines[0].name_de}</span>
-              </span>
-              <span className="review__values">
-                {lines.map((l) => (
-                  <span
-                    key={l.variant}
-                    className={`review__value${l.quantity === null ? ' is-empty' : ''}`}
-                    title={VARIANT_LABELS[l.variant]}
-                  >
-                    <small>{SHORT[l.variant]}</small>
-                    {l.quantity === null ? 'leer' : `${formatAmount(l.quantity)} ${UNIT_SHORT[l.unit]}`}
-                  </span>
+        <div className="review__columns" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+          {toColumns(byFruit(report.lines), columns).map((column, i) => (
+            <table key={i} className="review__table">
+              <thead>
+                <tr>
+                  <th>Frucht</th>
+                  {VARIANTS.map((v) => (
+                    <th key={v} className="review__num" title={VARIANT_LABELS[v]}>
+                      {SHORT[v]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {column.map((lines) => (
+                  <tr key={lines[0].dev_name}>
+                    <td>
+                      <span className="review__name">
+                        <FruitIcon devName={lines[0].dev_name} size={22} />
+                        <span>{lines[0].name_de}</span>
+                      </span>
+                    </td>
+                    {VARIANTS.map((v) => {
+                      const line = lines.find((l) => l.variant === v)
+                      if (!line) {
+                        // This fruit is not stocked in this variant (e.g. lemons: Bio only)
+                        return (
+                          <td key={v} className="review__num review__na">
+                            –
+                          </td>
+                        )
+                      }
+                      return (
+                        <td key={v} className="review__num">
+                          <span className={`review__value${line.quantity === null ? ' is-empty' : ''}`}>
+                            {line.quantity === null ? 'leer' : `${formatAmount(line.quantity)} ${UNIT_SHORT[line.unit]}`}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
                 ))}
-              </span>
-            </li>
+              </tbody>
+            </table>
           ))}
-        </ul>
+        </div>
 
         {ifco && (
           <p className="review__line">
@@ -142,7 +188,7 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
             type="button"
             className="btn btn--primary review__send"
             onClick={onSend}
-            disabled={sending || !report.worker}
+            disabled={sending}
           >
             {sending ? 'Wird gesendet…' : 'An HQ senden'}
           </button>

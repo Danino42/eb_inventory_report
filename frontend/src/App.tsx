@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { startAutoFlush } from './lib/reportQueue'
 import { FruitsDevPage } from './pages/dev/FruitsDevPage'
+import { OrderArticlesPage } from './pages/dev/OrderArticlesPage'
 import { HomePage } from './pages/HomePage'
 import { InventoryPage } from './pages/worker/InventoryPage'
 
@@ -14,6 +15,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/bestand" element={<InventoryPage />} />
       <Route path="/verwaltung" element={<FruitsDevPage />} />
+      <Route path="/verwaltung/bestellartikel" element={<OrderArticlesPage />} />
       {/* Old address of the catalogue page */}
       <Route path="/dev/fruits" element={<Navigate to="/verwaltung" replace />} />
     </Routes>

@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent, type SyntheticEvent } from 'react'
 import { ApiError } from '../../api/client'
 import { createFruit, deleteFruit, updateFruit } from '../../api/fruits'
+import { useAdminText } from '../../i18n/adminText'
 import {
   BOX_LABELS,
   BOX_TYPES,
   CATEGORIES,
-  CATEGORY_LABELS,
-  MONTHS_EN,
   UNITS,
-  UNIT_LABELS,
   VARIANTS,
-  VARIANT_LABELS,
   type BoxAvailability,
   type BoxType,
   type Fruit,
@@ -69,6 +66,7 @@ function toDraft(fruit: Fruit): Fruit {
 
 export function FruitEditor({ fruit, onClose, onSaved }: Props) {
   const isNew = fruit === null
+  const { t, lang } = useAdminText()
   const [initial] = useState<Fruit>(() => toDraft(fruit ?? EMPTY_FRUIT))
   const [draft, setDraft] = useState<Fruit>(initial)
   // For new fruits the dev name follows the English name until someone edits it by hand
@@ -103,7 +101,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
 
   /** Close via Cancel or Esc; asks first if something was changed */
   function requestClose() {
-    if (isDirty && !window.confirm('Discard your changes?')) return
+    if (isDirty && !window.confirm(t.discardChanges)) return
     onClose()
   }
 
@@ -149,9 +147,9 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
       onSaved(message)
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
-        setError(`The dev name "${draft.dev_name}" is already used by another fruit. Please choose a different one.`)
+        setError(t.devNameTaken(draft.dev_name))
       } else {
-        setError(e instanceof ApiError ? e.message : "Can't connect to the server. Nothing was saved, please try again.")
+        setError(e instanceof ApiError ? e.message : t.nothingSaved)
       }
     } finally {
       setBusy(false)
@@ -165,34 +163,36 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
       Object.entries(draft.availability).filter(([, a]) => a.months.length > 0),
     )
     const payload = { ...draft, dev_name: draft.dev_name.trim(), availability }
+    const shownName = lang === 'de' ? payload.name_de : payload.name_en
     run(
       () => (isNew ? createFruit(payload) : updateFruit(fruit.dev_name, payload)),
-      `${payload.name_de} ${isNew ? 'added' : 'saved'}`,
+      isNew ? t.added(shownName) : t.saved(shownName),
     )
   }
 
   function handleDelete() {
     if (!fruit) return
-    if (!window.confirm(`Delete ${fruit.name_de}? It will be removed from the list for everyone.`)) return
-    run(() => deleteFruit(fruit.dev_name), `${fruit.name_de} deleted`)
+    const shownName = lang === 'de' ? fruit.name_de : fruit.name_en
+    if (!window.confirm(t.confirmDeleteFruit(shownName))) return
+    run(() => deleteFruit(fruit.dev_name), t.deleted(shownName))
   }
 
   return (
     <dialog ref={dialogRef} className="editor" onCancel={handleEscape} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <h2>{isNew ? 'Add fruit' : `Edit ${fruit.name_de}`}</h2>
+        <h2>{isNew ? t.addFruit : t.editFruit(lang === 'de' ? fruit.name_de : fruit.name_en)}</h2>
 
         <div className="editor__grid">
           <label>
-            German name
+            {t.germanName}
             <input value={draft.name_de} onChange={(e) => set('name_de', e.target.value)} required />
           </label>
           <label>
-            English name
+            {t.englishName}
             <input value={draft.name_en} onChange={(e) => setEnglishName(e.target.value)} required />
           </label>
           <label>
-            Dev name
+            {t.devName}
             <input
               value={draft.dev_name}
               onChange={(e) => {
@@ -200,22 +200,22 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
                 set('dev_name', e.target.value)
               }}
               pattern="[a-z][a-z0-9_]*"
-              title="Only small letters, numbers and _ (for example apple_gala)"
+              title={t.devNameHint}
               required
             />
           </label>
           <label>
-            Unit
+            {t.unit}
             <select value={draft.unit} onChange={(e) => set('unit', e.target.value as Fruit['unit'])}>
               {UNITS.map((u) => (
                 <option key={u} value={u}>
-                  {UNIT_LABELS[u]}
+                  {t.units[u]}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            Article number
+            {t.articleNumber}
             <input
               value={draft.article_number}
               onChange={(e) => set('article_number', e.target.value)}
@@ -223,8 +223,8 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
             />
           </label>
           <div className="editor__variants">
-            <span>Stocked as</span>
-            <div className="segmented" role="group" aria-label="Stocked as">
+            <span>{t.stockedAs}</span>
+            <div className="segmented" role="group" aria-label={t.stockedAs}>
               {VARIANTS.map((v) => (
                 <button
                   key={v}
@@ -233,18 +233,18 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
                   className={draft.variants.includes(v) ? 'is-active' : ''}
                   onClick={() => toggleVariant(v)}
                 >
-                  {VARIANT_LABELS[v]}
+                  {t.variants[v]}
                 </button>
               ))}
             </div>
           </div>
           <label className="editor__wide">
-            Note
+            {t.note}
             <input value={draft.note} onChange={(e) => set('note', e.target.value)} />
           </label>
         </div>
 
-        <h3>Availability</h3>
+        <h3>{t.availability}</h3>
         {BOX_TYPES.map((box) => {
           const a = draft.availability[box]
           return (
@@ -262,7 +262,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
               {a && (
                 <>
                   <div className="editor__box-row">
-                    <div className="segmented" role="radiogroup" aria-label="Category">
+                    <div className="segmented" role="radiogroup" aria-label={t.category}>
                       {CATEGORIES.map((c) => (
                         <button
                           key={c}
@@ -272,21 +272,21 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
                           className={a.category === c ? 'is-active' : ''}
                           onClick={() => patchBox(box, { category: c })}
                         >
-                          {CATEGORY_LABELS[c]}
+                          {t.categories[c]}
                         </button>
                       ))}
                     </div>
                     <span className="editor__quick">
                       <button type="button" className="btn btn--small" onClick={() => patchBox(box, { months: ALL_MONTHS })}>
-                        All year
+                        {t.allYear}
                       </button>
                       <button type="button" className="btn btn--small" onClick={() => patchBox(box, { months: [] })}>
-                        Clear
+                        {t.clearMonths}
                       </button>
                     </span>
                   </div>
                   <div className="month-toggles">
-                    {MONTHS_EN.map((name, i) => (
+                    {t.monthsShort.map((name, i) => (
                       <button
                         key={name}
                         type="button"
@@ -309,15 +309,15 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
         <footer className="editor__footer">
           {!isNew && (
             <button type="button" className="btn btn--danger" onClick={handleDelete} disabled={busy}>
-              Delete
+              {t.delete}
             </button>
           )}
           <span className="spacer" />
           <button type="button" className="btn" onClick={requestClose} disabled={busy}>
-            Cancel
+            {t.cancel}
           </button>
           <button type="submit" className="btn btn--primary" disabled={busy}>
-            {busy ? 'Saving…' : 'Save'}
+            {busy ? t.saving : t.save}
           </button>
         </footer>
       </form>

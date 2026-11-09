@@ -1,0 +1,44 @@
+/* Bestellartikel: same table look as the fruit catalogue, grouped by supplier */
+
+.order-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The fruit table's headers get their padding from sort buttons; these have none */
+.order-table thead th {
+  padding: 7px 12px;
+}
+
+/* Supplier heading row (like "Lieferant" blocks on the printed list) */
+.order-table__supplier th,
+.order-table__supplier td {
+  padding: 14px 12px 7px;
+  background: var(--header-bg);
+  font-size: 0.95rem;
+  color: var(--text-strong);
+  cursor: default;
+}
+
+.order-table__supplier th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.order-table tbody tr.order-table__supplier:hover {
+  background: var(--header-bg);
+}
+
+/* Ordered less than needed (enough in stock) */
+.order-table__less {
+  color: var(--muted);
+}
+
+/* Each supplier block ends with a line, also after its last article */
+.order-table tbody tr:last-child td {
+  border-bottom: 1px solid var(--border);
+}
+
+.order-table .fruit-table__name {
+  min-width: 280px;
+}

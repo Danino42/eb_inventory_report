@@ -2,18 +2,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../../api/client'
 import { listFruits } from '../../api/fruits'
+import { AdminTabs } from '../../components/AdminTabs'
+import { LanguageToggle } from '../../components/LanguageToggle'
 import { FruitIcon } from '../../components/FruitIcon'
 import { MonthInitials, MonthStrip } from '../../components/MonthStrip'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { useAdminText, type AdminText, type Lang } from '../../i18n/adminText'
 import {
   BOX_LABELS,
   BOX_TYPES,
   CATEGORIES,
-  CATEGORY_LABELS,
-  MONTHS_EN_LONG,
   UNITS,
-  UNIT_LABELS,
-  VARIANT_LABELS,
   type BoxType,
   type Category,
   type FruitFilters,
@@ -25,7 +24,6 @@ import { nextSort, sortFruits, type Sort, type SortKey } from './sortFruits'
 import './FruitsDevPage.css'
 
 const CURRENT_MONTH = new Date().getMonth() + 1
-const OFFLINE_MESSAGE = "Can't connect to the server. Check the connection and try again."
 
 /** Editor state: closed, creating a new fruit, or editing an existing one */
 type Editing = { mode: 'closed' } | { mode: 'new' } | { mode: 'edit'; fruit: FruitWithDerived }
@@ -42,22 +40,26 @@ function getStoredView(): View {
   }
 }
 
-const COLUMNS: Record<View, { key: SortKey; label: string }[]> = {
-  simple: [
-    { key: 'name_de', label: 'Fruit' },
-    { key: 'months', label: 'Months' },
-  ],
-  detailed: [
-    { key: 'dev_name', label: 'Dev name' },
-    { key: 'article_number', label: 'Art.-Nr.' },
-    { key: 'name_de', label: 'Deutsch' },
-    { key: 'name_en', label: 'English' },
-    { key: 'unit', label: 'Unit' },
-    ...BOX_TYPES.map((b) => ({ key: b, label: BOX_LABELS[b] })),
-  ],
+/** Table columns per view; the simple view shows (and sorts by) the name in the chosen language */
+function columnsFor(view: View, t: AdminText, lang: Lang): { key: SortKey; label: string }[] {
+  if (view === 'simple') {
+    return [
+      { key: lang === 'de' ? 'name_de' : 'name_en', label: t.colFruit },
+      { key: 'months', label: t.colMonths },
+    ]
+  }
+  return [
+    { key: 'dev_name', label: t.colDevName },
+    { key: 'article_number', label: t.colArticleNumber },
+    { key: 'name_de', label: t.colGerman },
+    { key: 'name_en', label: t.colEnglish },
+    { key: 'unit', label: t.unit },
+    ...BOX_TYPES.map((b) => ({ key: b as SortKey, label: BOX_LABELS[b] })),
+  ]
 }
 
 export function FruitsDevPage() {
+  const { t, lang } = useAdminText()
   const [view, setView] = useState<View>(getStoredView)
   const [filters, setFilters] = useState<FruitFilters>({})
   const [fruits, setFruits] = useState<FruitWithDerived[]>([])
@@ -81,7 +83,7 @@ export function FruitsDevPage() {
       })
       .catch((e: unknown) => {
         if (stale) return
-        setError(e instanceof ApiError ? e.message : OFFLINE_MESSAGE)
+        setError(e instanceof ApiError ? e.message : 'offline')
       })
       .finally(() => {
         if (!stale) setLoading(false)
@@ -98,7 +100,7 @@ export function FruitsDevPage() {
   }, [notice])
 
   const sortedFruits = useMemo(() => sortFruits(fruits, sort), [fruits, sort])
-  const columns = COLUMNS[view]
+  const columns = columnsFor(view, t, lang)
   const highlight = filters.month ?? CURRENT_MONTH
 
   function setFilter<K extends keyof FruitFilters>(key: K, value: FruitFilters[K] | '') {
@@ -118,7 +120,7 @@ export function FruitsDevPage() {
       setFilters(({ month, q }) => ({ month, q }))
     }
     // Keep the sort only if that column exists in the other view
-    setSort((s) => (s && COLUMNS[next].some((c) => c.key === s.key) ? s : null))
+    setSort((s) => (s && columnsFor(next, t, lang).some((c) => c.key === s.key) ? s : null))
   }
 
   return (
@@ -126,50 +128,50 @@ export function FruitsDevPage() {
       <Link to="/" className="home-link">
         ‹ Start
       </Link>
+      <AdminTabs />
       <header className="dev-page__header">
-        <h1>
-          Fruit catalogue <span className="muted">· dev</span>
-        </h1>
+        <h1>{t.fruitsTitle}</h1>
         <div className="dev-page__actions">
           <button className="btn" onClick={switchView} aria-pressed={view === 'detailed'}>
-            {view === 'simple' ? 'Detailed view' : 'Simple view'}
+            {view === 'simple' ? t.detailedView : t.simpleView}
           </button>
+          <LanguageToggle />
           <ThemeToggle />
           <button className="btn btn--primary" onClick={() => setEditing({ mode: 'new' })}>
-            Add fruit
+            {t.addFruit}
           </button>
         </div>
       </header>
 
-      <section className="filters" aria-label="Filters">
+      <section className="filters" aria-label={t.search}>
         <label>
-          Month
+          {t.month}
           <span className="filters__month">
             <select
               value={filters.month ?? ''}
               onChange={(e) => setFilter('month', e.target.value ? Number(e.target.value) : '')}
             >
-              <option value="">All months</option>
-              {MONTHS_EN_LONG.map((name, i) => (
+              <option value="">{t.allMonths}</option>
+              {t.monthsLong.map((name, i) => (
                 <option key={name} value={i + 1}>
                   {name}
                 </option>
               ))}
             </select>
             <button className="btn btn--small" onClick={() => setFilter('month', CURRENT_MONTH)}>
-              This month
+              {t.thisMonth}
             </button>
           </span>
         </label>
         {view === 'detailed' && (
           <>
             <label>
-              Box type
+              {t.boxType}
               <select
                 value={filters.box_type ?? ''}
                 onChange={(e) => setFilter('box_type', e.target.value as BoxType)}
               >
-                <option value="">All boxes</option>
+                <option value="">{t.allBoxes}</option>
                 {BOX_TYPES.map((b) => (
                   <option key={b} value={b}>
                     {BOX_LABELS[b]}
@@ -178,26 +180,26 @@ export function FruitsDevPage() {
               </select>
             </label>
             <label>
-              Category
+              {t.category}
               <select
                 value={filters.category ?? ''}
                 onChange={(e) => setFilter('category', e.target.value as Category)}
               >
-                <option value="">All</option>
+                <option value="">{t.all}</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
-                    {CATEGORY_LABELS[c]}
+                    {t.categories[c]}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              Unit
+              {t.unit}
               <select value={filters.unit ?? ''} onChange={(e) => setFilter('unit', e.target.value as Unit)}>
-                <option value="">All</option>
+                <option value="">{t.all}</option>
                 {UNITS.map((u) => (
                   <option key={u} value={u}>
-                    {UNIT_LABELS[u]}
+                    {t.units[u]}
                   </option>
                 ))}
               </select>
@@ -205,16 +207,16 @@ export function FruitsDevPage() {
           </>
         )}
         <label className="filters__search">
-          Search
+          {t.search}
           <input
             type="search"
-            placeholder="Fruit name"
+            placeholder={t.fruitNamePlaceholder}
             value={filters.q ?? ''}
             onChange={(e) => setFilter('q', e.target.value)}
           />
         </label>
         <button className="btn btn--ghost" onClick={() => setFilters({})}>
-          Clear filters
+          {t.clearFilters}
         </button>
       </section>
 
@@ -226,15 +228,15 @@ export function FruitsDevPage() {
 
       {error && (
         <p className="error" role="alert">
-          {error}
+          {error === 'offline' ? t.offline : error}
         </p>
       )}
 
-      <section aria-label="Fruit table">
+      <section aria-label={t.fruitsTitle}>
         <h2 className="table-count">
           {loading
-            ? 'Loading…'
-            : `${fruits.length} fruits${filters.month ? ` available in ${MONTHS_EN_LONG[filters.month - 1]}` : ''}`}
+            ? t.loading
+            : t.fruitsCount(fruits.length, filters.month ? t.monthsLong[filters.month - 1] : undefined)}
         </h2>
         <div className="table-wrap">
           <table className={`fruit-table fruit-table--${view}`}>
@@ -273,7 +275,7 @@ export function FruitsDevPage() {
                     </th>
                   )
                 })}
-                <th aria-label="Actions" />
+                <th aria-label={t.edit} />
               </tr>
             </thead>
             <tbody>
@@ -285,7 +287,7 @@ export function FruitsDevPage() {
                         <span className="fruit-name">
                           <FruitIcon devName={f.dev_name} size={36} />
                           <span>
-                            {f.name_de}
+                            {lang === 'de' ? f.name_de : f.name_en}
                             {f.note && <small className="note">{f.note}</small>}
                           </span>
                         </span>
@@ -312,7 +314,7 @@ export function FruitsDevPage() {
                       <td>{f.name_en}</td>
                       <td>
                         {f.unit}
-                        <small className="note">{f.variants.map((v) => VARIANT_LABELS[v]).join(' · ')}</small>
+                        <small className="note">{f.variants.map((v) => t.variants[v]).join(' · ')}</small>
                       </td>
                       {BOX_TYPES.map((b) => {
                         const a = f.availability[b]
@@ -321,7 +323,7 @@ export function FruitsDevPage() {
                             {a ? (
                               <>
                                 <MonthStrip months={a.months} highlight={highlight} />
-                                {a.category === 'addon' && <span className="addon-mark">add-on</span>}
+                                {a.category === 'addon' && <span className="addon-mark">{t.addonMark}</span>}
                               </>
                             ) : (
                               <span className="muted">–</span>
@@ -333,7 +335,7 @@ export function FruitsDevPage() {
                   )}
                   <td className="fruit-table__action">
                     <button className="link-button" onClick={() => setEditing({ mode: 'edit', fruit: f })}>
-                      Edit
+                      {t.edit}
                     </button>
                   </td>
                 </tr>
@@ -344,7 +346,7 @@ export function FruitsDevPage() {
                 {/* +1 for the Edit column */}
                 <td colSpan={columns.length + 1} className="fruit-table__add">
                   <button type="button" onClick={() => setEditing({ mode: 'new' })}>
-                    + Add fruit
+                    + {t.addFruit}
                   </button>
                 </td>
               </tr>

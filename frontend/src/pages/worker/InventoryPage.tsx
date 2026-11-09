@@ -96,6 +96,8 @@ export function InventoryPage() {
   const [dialog, setDialog] = useState<'none' | 'name' | 'add' | 'review'>('none')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
+  // "An HQ senden" without a name: the name picker opens on top of the overview, then sends
+  const [pickNameToSend, setPickNameToSend] = useState(false)
   // Set after sending: shows the confirmation instead of the form
   const [sent, setSent] = useState<SentState | null>(null)
   const dateInputRef = useRef<HTMLInputElement>(null)
@@ -184,11 +186,12 @@ export function InventoryPage() {
   }
 
   /** The form as the backend expects it: one line per amount field, in form order */
-  function buildReport(): InventoryReport {
+  /** workerName: lets "send right after picking a name" use the new name before state updates */
+  function buildReport(workerName = name): InventoryReport {
     return {
       report_id: reportId,
       report_date: reportDate,
-      worker: name.trim(),
+      worker: workerName.trim(),
       lines: shown.flatMap((f) =>
         f.variants.map((variant) => ({
           article_number: f.article_number,
@@ -212,8 +215,12 @@ export function InventoryPage() {
     }
   }
 
-  async function send() {
-    const report = buildReport()
+  async function send(workerName = name) {
+    if (!workerName.trim()) {
+      setPickNameToSend(true)
+      return
+    }
+    const report = buildReport(workerName)
     setSending(true)
     setSendError(null)
     try {
@@ -492,8 +499,20 @@ export function InventoryPage() {
           report={buildReport()}
           sending={sending}
           error={sendError}
-          onSend={send}
+          onSend={() => void send()}
           onClose={() => setDialog('none')}
+        />
+      )}
+      {pickNameToSend && (
+        <NamePicker
+          names={workers}
+          current={name}
+          onPick={(picked) => {
+            setName(picked)
+            setPickNameToSend(false)
+            void send(picked)
+          }}
+          onClose={() => setPickNameToSend(false)}
         />
       )}
     </div>

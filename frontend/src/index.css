@@ -229,6 +229,34 @@ button:focus-visible {
   background: var(--hover);
 }
 
+/* Tabs of the Verwaltung area (Früchtekatalog | Bestellartikel) */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 16px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-tabs__tab:hover {
+  color: var(--text-strong);
+}
+
+.admin-tabs__tab.active {
+  border-bottom-color: var(--text-strong);
+  color: var(--text-strong);
+}
+
 /* Hidden but still usable by the browser (e.g. the native date picker) */
 .visually-hidden {
   position: absolute;

@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useAdminText } from '../i18n/adminText'
 import { applyTheme, getStoredTheme, type Theme } from '../theme'
 
 /** Switches between light and dark mode; the choice is remembered on this device */
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(getStoredTheme)
+  const { t } = useAdminText()
 
   function toggle() {
     const next = theme === 'dark' ? 'light' : 'dark'
@@ -13,7 +15,7 @@ export function ThemeToggle() {
 
   return (
     <button type="button" className="btn" onClick={toggle} aria-pressed={theme === 'dark'}>
-      {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+      {theme === 'dark' ? t.lightMode : t.darkMode}
     </button>
   )
 }

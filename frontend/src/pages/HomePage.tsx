@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 import { FruitIcon } from '../components/FruitIcon'
-import { ThemeToggle } from '../components/ThemeToggle'
 import { flushQueue } from '../lib/reportQueue'
 import { usePendingReports } from '../lib/usePendingReports'
 import { defaultReportDate, formatReportDate } from './worker/reportDate'
@@ -15,7 +14,6 @@ export function HomePage() {
     <main className="home">
       <header className="home__header">
         <h1>Earlybird</h1>
-        <ThemeToggle />
       </header>
       {(waiting > 0 || failed > 0) && (
         <div className="home__queue" role="status">
@@ -55,7 +53,7 @@ export function HomePage() {
             <FruitIcon devName="grapes_seedless" size={56} />
           </span>
           <span className="home__title">Verwaltung</span>
-          <span className="home__sub">Früchtekatalog</span>
+          <span className="home__sub">Früchtekatalog · Bestellartikel</span>
         </Link>
       </nav>
     </main>

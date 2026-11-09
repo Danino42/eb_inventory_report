@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Fruit catalogue (seasonal calendar), edited through /api/fruits
     fruits_file: Path = BACKEND_DIR / "data" / "fruits.json"
 
+    # Regularly ordered articles (supplier order list); mock data until the Access import exists
+    order_articles_file: Path = BACKEND_DIR / "data" / "order_articles.json"
+
     # Names offered in the worker form's name picker
     workers_file: Path = BACKEND_DIR / "data" / "workers.json"
 

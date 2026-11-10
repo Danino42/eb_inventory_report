@@ -36,6 +36,9 @@ export const VARIANT_LABELS: Record<Variant, string> = {
   bio: 'Bio',
 }
 
+/** Where space is short (review table, phone layout of the form) */
+export const VARIANT_SHORT: Record<Variant, string> = { conventional: 'Konv.', bio: 'Bio' }
+
 /** Index 0 = January (month 1) */
 export const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 export const MONTHS_EN_LONG = [

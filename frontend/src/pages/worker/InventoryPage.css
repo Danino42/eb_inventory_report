@@ -153,6 +153,11 @@
   justify-content: center;
 }
 
+/* "Konv." / "Bio" next to each amount: only in the phone layout (see the end of this file) */
+.stock__variant {
+  display: none;
+}
+
 /* Last row: type a fruit that is not in the catalogue */
 .stock__row--new {
   align-items: center;
@@ -383,6 +388,8 @@
 
 .sheet__body {
   display: grid;
+  /* Content never makes the pop-up wider than the screen */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   padding: 20px;
 }
@@ -432,12 +439,14 @@
 .name-other label {
   display: grid;
   flex: 1;
+  min-width: 0;
   gap: 4px;
   font-size: 0.85rem;
   color: var(--muted);
 }
 
 .name-other input {
+  min-width: 0;
   min-height: 48px;
   font-size: 1.05rem;
   color: var(--text);
@@ -729,6 +738,9 @@
 
 .sent__actions {
   display: flex;
+  /* On phones the two buttons go under each other */
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
   margin-top: 16px;
 }
@@ -787,10 +799,40 @@
   }
 }
 
-/* Phones: amounts move under the fruit name */
+/* Phones: one column. Each amount gets its own line under the fruit name, labelled Konv. / Bio,
+   so the field is wide enough for amounts like 48.75 (side by side they were cut off) */
 @media (max-width: 520px) {
   .stock {
-    --stock-cols: 1fr 1fr;
+    --stock-cols: 1fr;
+  }
+
+  .stock__head {
+    display: none;
+  }
+
+  .stock__cell {
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Variant this fruit does not have (e.g. Zitrone: Bio only) */
+  .stock__cell:empty {
+    display: none;
+  }
+
+  .stock__variant {
+    display: block;
+    flex: none;
+    width: 48px;
+    /* Centred next to the 52 px field; a "Bist du sicher?" warning goes below the field */
+    line-height: 52px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .qty {
+    flex: 1;
   }
 
   .qty__row {
@@ -803,12 +845,31 @@
     min-width: 0;
   }
 
-  .stock__head span:first-child {
-    display: none;
-  }
-
-  .stock__fruit,
+  /* New fruit: name on its own line, kg/Stk and Hinzufügen below */
   .stock__new-form {
     grid-column: 1 / -1;
+  }
+
+  .new-fruit {
+    flex-wrap: wrap;
+  }
+
+  .new-fruit input {
+    flex-basis: 100%;
+  }
+
+  .new-fruit .btn {
+    flex: 1;
+  }
+
+  /* Review: the two buttons share the width instead of pushing the pop-up wider */
+  .review__header {
+    flex-wrap: wrap;
+  }
+
+  .review__back,
+  .review__send {
+    flex: 1;
+    min-width: 0;
   }
 }

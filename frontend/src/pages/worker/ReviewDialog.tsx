@@ -3,7 +3,7 @@ import { getDeliveryInfo, type DeliveryInfo, type InventoryReport, type StockLin
 import { readJson, writeJson } from '../../lib/storage'
 import { FruitIcon } from '../../components/FruitIcon'
 import ifcoIcon from '../../images/ifco.png'
-import { VARIANTS, VARIANT_LABELS, type Variant } from '../../types/fruit'
+import { VARIANTS, VARIANT_LABELS, VARIANT_SHORT } from '../../types/fruit'
 import { UNIT_SHORT, formatAmount } from './amount'
 import { formatReportDate } from './reportDate'
 
@@ -14,8 +14,6 @@ interface Props {
   onSend: () => void
   onClose: () => void
 }
-
-const SHORT: Record<Variant, string> = { conventional: 'Konv.', bio: 'Bio' }
 
 // Last known recipients, so the line is also shown when the tablet is offline
 const DELIVERY_KEY = 'eb-delivery-info-v1'
@@ -101,7 +99,7 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
                   <th>Frucht</th>
                   {VARIANTS.map((v) => (
                     <th key={v} className="review__num" title={VARIANT_LABELS[v]}>
-                      {SHORT[v]}
+                      {VARIANT_SHORT[v]}
                     </th>
                   ))}
                 </tr>

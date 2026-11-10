@@ -5,7 +5,14 @@ import { sendReport, type InventoryReport, type ReportResult } from '../../api/r
 import { FruitIcon } from '../../components/FruitIcon'
 import { enqueueReport } from '../../lib/reportQueue'
 import { newId } from '../../lib/storage'
-import { VARIANTS, VARIANT_LABELS, type FruitWithDerived, type Unit, type Variant } from '../../types/fruit'
+import {
+  VARIANTS,
+  VARIANT_LABELS,
+  VARIANT_SHORT,
+  type FruitWithDerived,
+  type Unit,
+  type Variant,
+} from '../../types/fruit'
 import { AddFruitDialog } from './AddFruitDialog'
 import { EMPTY_IFCO, type IfcoState } from './ifco'
 import { IfcoSection } from './IfcoSection'
@@ -410,13 +417,19 @@ export function InventoryPage() {
                 {VARIANTS.map((v) => (
                   <div key={v} className="stock__cell">
                     {f.variants.includes(v) && (
-                      <QuantityInput
-                        value={amounts[f.dev_name]?.[v] ?? ''}
-                        unit={f.unit}
-                        onChange={(value) => setAmount(f.dev_name, v, value)}
-                        onStep={(delta) => stepFor(f.dev_name, v, delta)}
-                        label={`${f.name_de} ${VARIANT_LABELS[v]}`}
-                      />
+                      <>
+                        {/* Phones stack the amounts, so each needs its own label there */}
+                        <span className="stock__variant" aria-hidden="true">
+                          {VARIANT_SHORT[v]}
+                        </span>
+                        <QuantityInput
+                          value={amounts[f.dev_name]?.[v] ?? ''}
+                          unit={f.unit}
+                          onChange={(value) => setAmount(f.dev_name, v, value)}
+                          onStep={(delta) => stepFor(f.dev_name, v, delta)}
+                          label={`${f.name_de} ${VARIANT_LABELS[v]}`}
+                        />
+                      </>
                     )}
                   </div>
                 ))}

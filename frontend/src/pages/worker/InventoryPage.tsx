@@ -101,7 +101,6 @@ export function InventoryPage() {
   const [pickNameToSend, setPickNameToSend] = useState(false)
   // Set after sending: shows the confirmation instead of the form
   const [sent, setSent] = useState<SentState | null>(null)
-  const dateInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadFormData()
@@ -337,26 +336,25 @@ export function InventoryPage() {
       <header className="inventory__header">
         <div className="inventory__title">
           <h1>Warenbestand</h1>
-          <button
-            type="button"
-            className="inventory__date"
-            onClick={() => {
-              const input = dateInputRef.current
-              if (input?.showPicker) input.showPicker()
-              else input?.focus()
-            }}
-          >
+          {/* The real date field lies invisibly over the date text, so a tap lands on the field
+              itself: Safari (iPhone / iPad) only opens its picker for such a direct tap */}
+          <label className="inventory__date">
             <strong>{weekday}</strong> {date}
-          </button>
-          <input
-            ref={dateInputRef}
-            type="date"
-            className="visually-hidden"
-            value={reportDate}
-            onChange={(e) => e.target.value && setReportDate(e.target.value)}
-            tabIndex={-1}
-            aria-label="Datum ändern"
-          />
+            <input
+              type="date"
+              value={reportDate}
+              onChange={(e) => e.target.value && setReportDate(e.target.value)}
+              onClick={(e) => {
+                // Desktop Chrome / Edge would otherwise only open the calendar from its icon
+                try {
+                  e.currentTarget.showPicker?.()
+                } catch {
+                  // Not supported or already open: the tap itself opens the picker
+                }
+              }}
+              aria-label="Datum ändern"
+            />
+          </label>
         </div>
         <button
           type="button"

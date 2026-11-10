@@ -26,15 +26,36 @@
 }
 
 .inventory__date {
+  position: relative;
   justify-self: start;
   padding: 2px 0;
-  border: none;
-  background: none;
   font-size: 1.05rem;
   color: var(--text);
   cursor: pointer;
   text-decoration: underline dotted var(--muted);
   text-underline-offset: 4px;
+}
+
+/* The native date field, invisible, covering the date text (see InventoryPage.tsx) */
+.inventory__date input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  /* iOS zooms into fields with smaller text */
+  font-size: 16px;
+}
+
+.inventory__date:focus-within {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+  border-radius: var(--radius);
 }
 
 .inventory__name {

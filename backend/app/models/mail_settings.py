@@ -1,34 +1,49 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Any
+
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+
+MAX_RECIPIENTS = 10
+
+
+def _without_duplicates(addresses: list[str]) -> list[str]:
+    return list(dict.fromkeys(addresses))
 
 
 class MailSettings(BaseModel):
-    """Who gets the report emails, and from which address; set on the Verwaltung settings page."""
+    """Who gets the report emails (Verwaltung -> Einstellungen) and the fixed sender."""
 
-    # While use_production is off, reports only go to these addresses (testing)
-    test_recipients: list[EmailStr] = Field(default_factory=list, max_length=10)
-    # The real addresses, e.g. the office at HQ
-    production_recipients: list[EmailStr] = Field(default_factory=list, max_length=10)
-    use_production: bool = False
-    # Sender address (with Brevo: verified there). None: SMTP_FROM of the server
+    recipients: list[EmailStr] = Field(default_factory=list, max_length=MAX_RECIPIENTS)
+    # Fixed sender (verified in Brevo), not editable on the page. None: SMTP_FROM of the server
     sender: EmailStr | None = None
 
-    @field_validator("test_recipients", "production_recipients")
+    @model_validator(mode="before")
     @classmethod
-    def _without_duplicates(cls, addresses: list[str]) -> list[str]:
-        return list(dict.fromkeys(addresses))
+    def _from_older_version(cls, data: Any) -> Any:
+        """Settings saved with the former test/production switch: keep the list that was in use"""
+        if isinstance(data, dict) and "recipients" not in data and "test_recipients" in data:
+            in_use = "production_recipients" if data.get("use_production") else "test_recipients"
+            return {"recipients": data.get(in_use) or [], "sender": data.get("sender")}
+        return data
 
-    @property
-    def recipients(self) -> list[str]:
-        """Where reports go right now"""
-        return list(self.production_recipients if self.use_production else self.test_recipients)
+    _unique = field_validator("recipients")(_without_duplicates)
 
 
-class MailSettingsInfo(MailSettings):
-    """What the settings page shows: the settings, plus what the server is set up with"""
+class RecipientsUpdate(BaseModel):
+    """What the page can change: only the recipients"""
 
+    recipients: list[EmailStr] = Field(min_length=1, max_length=MAX_RECIPIENTS)
+
+    _unique = field_validator("recipients")(_without_duplicates)
+
+
+class MailSettingsInfo(BaseModel):
+    """What the settings page shows"""
+
+    recipients: list[str]
+    # The address the emails come from (fixed)
+    sender: str
+    # False: the server has no way of sending yet (Brevo / SMTP), reports are only saved
     email_configured: bool
-    # Sender used when the page has none (SMTP_FROM on the server)
-    server_sender: str
 
 
 class TestMailResult(BaseModel):

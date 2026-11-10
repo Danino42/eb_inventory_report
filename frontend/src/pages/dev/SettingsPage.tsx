@@ -1,41 +1,39 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../../api/client'
-import {
-  getMailSettings,
-  saveMailSettings,
-  sendTestMail,
-  type MailSettings,
-  type MailSettingsInfo,
-} from '../../api/settings'
+import { getMailSettings, saveRecipients, sendTestMail, type MailSettingsInfo } from '../../api/settings'
 import { AdminTabs } from '../../components/AdminTabs'
 import { LanguageToggle } from '../../components/LanguageToggle'
 import { useAdminText } from '../../i18n/adminText'
 import './FruitsDevPage.css'
 import './SettingsPage.css'
 
-/** "a@b.ch, c@d.ch" <-> ["a@b.ch", "c@d.ch"] */
-const toList = (text: string) => text.split(/[\s,;]+/).filter(Boolean)
-const toText = (list: string[]) => list.join(', ')
+const MAX_RECIPIENTS = 10
 
-/** Verwaltung settings: where the report emails go (test or production addresses), and from whom */
+interface Row {
+  id: number
+  address: string
+}
+
+/** Verwaltung settings: who gets the report emails; the sender is fixed */
 export function SettingsPage() {
   const { t } = useAdminText()
   const [info, setInfo] = useState<MailSettingsInfo | null>(null)
-  const [testText, setTestText] = useState('')
-  const [productionText, setProductionText] = useState('')
-  const [useProduction, setUseProduction] = useState(false)
-  const [senderText, setSenderText] = useState('')
+  // One field per address (stable ids, so removing a row keeps the others' focus and text)
+  const [rows, setRows] = useState<Row[]>([])
+  const nextId = useRef(0)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState<'save' | 'test' | null>(null)
 
+  function toRows(addresses: string[]): Row[] {
+    const list = addresses.length ? addresses : ['']
+    return list.map((address) => ({ id: nextId.current++, address }))
+  }
+
   function show(settings: MailSettingsInfo) {
     setInfo(settings)
-    setTestText(toText(settings.test_recipients))
-    setProductionText(toText(settings.production_recipients))
-    setUseProduction(settings.use_production)
-    setSenderText(settings.sender ?? '')
+    setRows(toRows(settings.recipients))
   }
 
   useEffect(() => {
@@ -58,29 +56,28 @@ export function SettingsPage() {
     return () => clearTimeout(timer)
   }, [notice])
 
-  /** The form as settings; null (with an error shown) if the active list is empty */
-  function formSettings(): MailSettings | null {
-    const settings = {
-      test_recipients: toList(testText),
-      production_recipients: toList(productionText),
-      use_production: useProduction,
-      sender: senderText.trim() || null,
-    }
-    if ((useProduction ? settings.production_recipients : settings.test_recipients).length === 0) {
-      setError(t.activeListEmpty)
+  function setAddress(id: number, address: string) {
+    setRows((list) => list.map((r) => (r.id === id ? { ...r, address } : r)))
+  }
+
+  /** The filled-in addresses; null (with an error shown) if there is none */
+  function recipients(): string[] | null {
+    const list = rows.map((r) => r.address.trim()).filter(Boolean)
+    if (list.length === 0) {
+      setError(t.noRecipients)
       return null
     }
-    return settings
+    return list
   }
 
   async function save(e: FormEvent) {
     e.preventDefault()
-    const settings = formSettings()
-    if (!settings) return
+    const list = recipients()
+    if (!list) return
     setBusy('save')
     setError(null)
     try {
-      show(await saveMailSettings(settings))
+      show(await saveRecipients(list))
       setNotice(t.settingsSaved)
     } catch (e) {
       if (e instanceof ApiError) setError(e.status === 422 ? t.invalidEmails : e.message)
@@ -90,14 +87,14 @@ export function SettingsPage() {
     }
   }
 
-  /** Sends a test email with what is on the page (not saved); a failure shows the reason */
+  /** Sends a test email to the addresses on the page (not saved); a failure shows the reason */
   async function test() {
-    const settings = formSettings()
-    if (!settings) return
+    const list = recipients()
+    if (!list) return
     setBusy('test')
     setError(null)
     try {
-      const result = await sendTestMail(settings)
+      const result = await sendTestMail(list)
       setNotice(t.testSent(result.recipients.join(', ')))
     } catch (e) {
       if (!(e instanceof ApiError)) setError(t.offline)
@@ -136,55 +133,44 @@ export function SettingsPage() {
       {info && (
         <form className="settings" onSubmit={save}>
           <h2>{t.reportEmails}</h2>
-          <div className="settings__field">
-            <span className="settings__label">{t.sendTo}</span>
-            <div className="segmented" role="radiogroup" aria-label={t.sendTo}>
-              {([false, true] as const).map((production) => (
-                <button
-                  key={String(production)}
-                  type="button"
-                  role="radio"
-                  aria-checked={useProduction === production}
-                  className={useProduction === production ? 'is-active' : ''}
-                  onClick={() => setUseProduction(production)}
-                >
-                  {production ? t.modeProduction : t.modeTest}
-                </button>
+          <div className="settings__field settings__field--top">
+            <span className="settings__label">{t.recipients}</span>
+            <div className="settings__list">
+              {rows.map((row, i) => (
+                <div key={row.id} className="settings__row">
+                  <input
+                    type="email"
+                    value={row.address}
+                    onChange={(e) => setAddress(row.id, e.target.value)}
+                    aria-label={`${t.recipients} ${i + 1}`}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  {rows.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => setRows((list) => list.filter((r) => r.id !== row.id))}
+                    >
+                      {t.remove}
+                    </button>
+                  )}
+                </div>
               ))}
+              {rows.length < MAX_RECIPIENTS && (
+                <button
+                  type="button"
+                  className="btn settings__add"
+                  onClick={() => setRows((list) => [...list, { id: nextId.current++, address: '' }])}
+                >
+                  + {t.recipient}
+                </button>
+              )}
             </div>
           </div>
           <label className="settings__field">
-            <span className="settings__label">{t.testRecipients}</span>
-            <input
-              className={useProduction ? '' : 'is-active'}
-              value={testText}
-              onChange={(e) => setTestText(e.target.value)}
-              inputMode="email"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
-          <label className="settings__field">
-            <span className="settings__label">{t.productionRecipients}</span>
-            <input
-              className={useProduction ? 'is-active' : ''}
-              value={productionText}
-              onChange={(e) => setProductionText(e.target.value)}
-              inputMode="email"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
-          <label className="settings__field">
             <span className="settings__label">{t.sender}</span>
-            <input
-              type="email"
-              value={senderText}
-              placeholder={info.server_sender}
-              onChange={(e) => setSenderText(e.target.value)}
-              autoComplete="off"
-              spellCheck={false}
-            />
+            <input className="settings__fixed" value={info.sender} readOnly tabIndex={-1} />
           </label>
           <p className={`settings__status${info.email_configured ? '' : ' is-warning'}`}>
             {info.email_configured ? t.emailConfigured : t.emailNotConfigured}

@@ -1,12 +1,29 @@
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import get_settings
+from app.services.keep_awake import keep_awake
 
 settings = get_settings()
 
-app = FastAPI(title=settings.app_name)
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # On Render (which sets RENDER_EXTERNAL_URL) the server keeps itself awake: no cold starts
+    task = None
+    if settings.keep_awake and settings.render_external_url:
+        url = f"{settings.render_external_url.rstrip('/')}/api/health"
+        task = asyncio.create_task(keep_awake(url))
+    yield
+    if task:
+        task.cancel()
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 # The PWA runs on a different address than the API, so the browser needs CORS permission
 app.add_middleware(

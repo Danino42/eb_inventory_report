@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     app_name: str = "Earlybird Inventory Report API"
     environment: str = "development"
 
+    # Set by Render to the service's public address. While it is set, the server calls itself every
+    # 10 minutes, so the free plan never puts it to sleep (no ~1 minute cold start for the tablet)
+    render_external_url: str = ""
+    keep_awake: bool = True
+
     # Frontend origins allowed to call the API (Vite dev server and preview by default)
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
     # Optional pattern for hosted frontends whose address may vary, e.g. a suffixed Render address
@@ -44,10 +49,9 @@ class Settings(BaseSettings):
     mongodb_uri: str = ""
     mongodb_db: str = "eb_inventory"
 
-    # Inventory reports: who receives the PDF + CSV email (test / production addresses). Only the
-    # starting values: once the Verwaltung settings page is saved, its addresses are used
+    # Inventory reports: who receives the PDF + CSV email. Only the starting value: once
+    # Verwaltung -> Einstellungen is saved, the addresses from there are used
     report_recipients: list[str] = []
-    production_recipients: list[str] = []
     # Where that page is saved without MongoDB (local development; not in git)
     mail_settings_file: Path = BACKEND_DIR / "data" / "mail_settings.local.json"
 

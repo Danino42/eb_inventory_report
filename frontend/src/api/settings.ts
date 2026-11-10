@@ -1,19 +1,11 @@
 import { request } from './client'
 
-export interface MailSettings {
-  test_recipients: string[]
-  production_recipients: string[]
-  /** true: reports go to the production addresses, false: only to the test addresses */
-  use_production: boolean
-  /** Sender address (with Brevo: verified there); null: the server's default sender */
-  sender: string | null
-}
-
-export interface MailSettingsInfo extends MailSettings {
+export interface MailSettingsInfo {
+  recipients: string[]
+  /** The address the emails come from (fixed on the server) */
+  sender: string
   /** false: the server has no way of sending yet (Brevo / SMTP), reports are only saved */
   email_configured: boolean
-  /** Sender used when none is set here */
-  server_sender: string
 }
 
 export interface TestMailResult {
@@ -25,11 +17,11 @@ export function getMailSettings(): Promise<MailSettingsInfo> {
   return request('/settings/mail')
 }
 
-export function saveMailSettings(settings: MailSettings): Promise<MailSettingsInfo> {
-  return request('/settings/mail', { method: 'PUT', body: JSON.stringify(settings) })
+export function saveRecipients(recipients: string[]): Promise<MailSettingsInfo> {
+  return request('/settings/mail', { method: 'PUT', body: JSON.stringify({ recipients }) })
 }
 
-/** Sends a test email with these (unsaved) settings; fails with the server's reason */
-export function sendTestMail(settings: MailSettings): Promise<TestMailResult> {
-  return request('/settings/mail/test', { method: 'POST', body: JSON.stringify(settings) })
+/** Sends a test email to these (unsaved) addresses; fails with the server's reason */
+export function sendTestMail(recipients: string[]): Promise<TestMailResult> {
+  return request('/settings/mail/test', { method: 'POST', body: JSON.stringify({ recipients }) })
 }

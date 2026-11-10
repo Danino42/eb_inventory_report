@@ -11,30 +11,56 @@
 
 .settings__field {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
+  grid-template-columns: 140px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
 }
 
+/* Label next to the first of several rows */
+.settings__field--top {
+  align-items: start;
+}
+
+.settings__field--top .settings__label {
+  padding-top: 11px;
+}
+
 .settings__field input {
+  width: 100%;
   min-height: 44px;
   font-size: 1rem;
 }
 
-/* The addresses reports go to right now */
-.settings__field input.is-active {
-  border-color: var(--text-strong);
-  box-shadow: inset 0 0 0 1px var(--text-strong);
+.settings__list {
+  display: grid;
+  gap: 8px;
 }
 
-.settings__field .segmented {
+.settings__row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings__row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings__row .btn,
+.settings__add {
+  min-height: 44px;
+}
+
+.settings__add {
   justify-self: start;
 }
 
-.settings__field .segmented button {
-  min-height: 40px;
-  padding: 4px 18px;
-  font-size: 0.95rem;
+/* The sender is fixed: shown, not editable */
+.settings__fixed {
+  border-color: var(--border);
+  background: var(--hover);
+  color: var(--muted);
+  pointer-events: none;
 }
 
 .settings__actions {
@@ -59,5 +85,9 @@
   .settings__field {
     grid-template-columns: minmax(0, 1fr);
     gap: 4px;
+  }
+
+  .settings__field--top .settings__label {
+    padding-top: 0;
   }
 }

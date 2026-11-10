@@ -7,7 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.admin_pin import ADMIN_PIN
 from app.api.deps import MailStore
 from app.core.config import Settings, get_settings
-from app.models.mail_settings import MailSettings, MailSettingsInfo, TestMailResult
+from app.models.mail_settings import (
+    MailSettings,
+    MailSettingsInfo,
+    RecipientsUpdate,
+    TestMailResult,
+)
 from app.services.mail_settings_store import current_mail_settings
 from app.services.mailer import SendError, build_message, can_send, from_header, send
 
@@ -26,47 +31,44 @@ TEST_BODY = (
 
 def _info(mail: MailSettings, settings: Settings) -> MailSettingsInfo:
     return MailSettingsInfo(
-        **mail.model_dump(),
+        recipients=mail.recipients,
+        sender=parseaddr(from_header(settings, mail.sender))[1],
         email_configured=can_send(settings),
-        server_sender=parseaddr(settings.smtp_from)[1],
     )
-
-
-def _require_recipients(mail: MailSettings) -> None:
-    if not mail.recipients:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, "The selected recipient list has no address"
-        )
 
 
 # All need the PIN: the addresses are only for the Verwaltung
 @router.get("/mail", dependencies=[ADMIN_PIN])
 def get_mail_settings(settings: Config, store: MailStore) -> MailSettingsInfo:
-    """Report recipients (test / production), which of them are used, and the sender."""
+    """Report recipients and the (fixed) sender."""
     return _info(current_mail_settings(store, settings), settings)
 
 
 @router.put("/mail", dependencies=[ADMIN_PIN])
-def save_mail_settings(mail: MailSettings, settings: Config, store: MailStore) -> MailSettingsInfo:
-    _require_recipients(mail)
+def save_mail_settings(
+    update: RecipientsUpdate, settings: Config, store: MailStore
+) -> MailSettingsInfo:
+    """Saves the recipients; the sender stays as it is."""
+    mail = current_mail_settings(store, settings).model_copy(
+        update={"recipients": update.recipients}
+    )
     store.save(mail)
     return _info(mail, settings)
 
 
 @router.post("/mail/test", dependencies=[ADMIN_PIN])
-def send_test_mail(mail: MailSettings, settings: Config) -> TestMailResult:
-    """Sends a short test email with the settings as they are on the page (nothing is saved).
+def send_test_mail(update: RecipientsUpdate, settings: Config, store: MailStore) -> TestMailResult:
+    """Sends a short test email to the addresses on the page (nothing is saved).
 
     If it fails, the answer says why (e.g. Brevo's reason), so the setup can be fixed.
     """
     if not can_send(settings):
         raise HTTPException(status.HTTP_409_CONFLICT, "Email sending is not set up on the server")
-    _require_recipients(mail)
-    sender = from_header(settings, mail.sender)
-    msg = build_message(sender, mail.recipients, TEST_SUBJECT, TEST_BODY, [])
+    sender = from_header(settings, current_mail_settings(store, settings).sender)
+    msg = build_message(sender, update.recipients, TEST_SUBJECT, TEST_BODY, [])
     try:
-        send(settings, mail.recipients, msg, [])
+        send(settings, update.recipients, msg, [])
     except SendError as exc:
         logger.warning("Test email not sent: %s", exc)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(exc)) from exc
-    return TestMailResult(sender=sender, recipients=mail.recipients)
+    return TestMailResult(sender=sender, recipients=update.recipients)

@@ -51,7 +51,4 @@ class MongoMailSettingsStore:
 
 def current_mail_settings(store: MailSettingsStore, settings: Settings) -> MailSettings:
     """The saved settings; until the page is saved once, the starting values of the server"""
-    return store.load() or MailSettings(
-        test_recipients=settings.report_recipients,
-        production_recipients=settings.production_recipients,
-    )
+    return store.load() or MailSettings(recipients=settings.report_recipients)

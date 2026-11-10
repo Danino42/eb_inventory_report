@@ -17,16 +17,20 @@ export interface FormLine {
   variant: Variant
 }
 
-/** Add-ons are counted in pieces (Stk), Hauptfrüchte in kg (by the crate) */
-function sectionOf(fruit: FruitWithDerived, variant: Variant): SectionKey {
-  return fruit.unit === 'pcs' ? 'addons' : variant
+/** An add-on in every box it is in (e.g. Zitrone, Trockenfrüchte; Kiwi is a box fruit in Bio).
+    Fruits typed in by hand count as add-ons when they are counted in pieces (Stk). */
+function isAddon(fruit: FruitWithDerived): boolean {
+  const boxes = Object.values(fruit.availability).filter((b) => b !== undefined)
+  return boxes.length > 0 ? boxes.every((b) => b.category === 'addon') : fruit.unit === 'pcs'
 }
 
 /** The amount fields of the shown fruits per part, each part in the order of the fruit list */
 export function groupLines(fruits: FruitWithDerived[]): Record<SectionKey, FormLine[]> {
   const groups: Record<SectionKey, FormLine[]> = { conventional: [], bio: [], addons: [] }
   for (const fruit of fruits) {
-    for (const variant of fruit.variants) groups[sectionOf(fruit, variant)].push({ fruit, variant })
+    for (const variant of fruit.variants) {
+      groups[isAddon(fruit) ? 'addons' : variant].push({ fruit, variant })
+    }
   }
   return groups
 }

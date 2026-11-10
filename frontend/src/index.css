@@ -18,6 +18,9 @@
   --danger-bg: #fdf3f2;
   --warn: #8a5a00;
   --warn-bg: #fff6e0;
+  /* Amount far above normal (likely a typo): clearly orange, not red */
+  --alert: #f08c00;
+  --alert-bg: #ffe8cc;
   /* Empty fields in the review / PDF */
   --empty-bg: #fff1df;
   --empty-text: #b4691f;
@@ -54,6 +57,8 @@
   --danger-bg: #2a1716;
   --warn: #f0b44c;
   --warn-bg: #2e2412;
+  --alert: #ffa94d;
+  --alert-bg: #4a2c0a;
   --empty-bg: #3a2a17;
   --empty-text: #f2b27a;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5);

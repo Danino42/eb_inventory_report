@@ -119,23 +119,19 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Icon + name. For kg fruits it is a button: one tap adds a whole crate */
+/* Icon + name as one button up to the amount field: a tap adds a whole crate (Hauptfrüchte)
+   or one piece (add-ons) */
 .stock__fruit {
-  justify-self: start;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: min(100%, 280px);
+  min-width: 0;
   min-height: 60px;
-  padding: 6px 14px 6px 8px;
-  border: 1px solid transparent;
+  padding: 6px 16px 6px 8px;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--header-bg);
   text-align: left;
-}
-
-button.stock__fruit {
-  border-color: var(--border-strong);
-  background: var(--bg);
   cursor: pointer;
   /* Quick taps must neither zoom nor select text */
   touch-action: manipulation;
@@ -143,11 +139,12 @@ button.stock__fruit {
   -webkit-user-select: none;
 }
 
-button.stock__fruit:hover {
+.stock__fruit:hover {
+  border-color: var(--border-strong);
   background: var(--hover);
 }
 
-button.stock__fruit:active {
+.stock__fruit:active {
   background: var(--surface-2);
 }
 
@@ -192,7 +189,9 @@ button.stock__fruit:active {
 }
 
 .stock__row--new .stock__fruit {
-  min-width: 0;
+  border-color: transparent;
+  background: none;
+  cursor: default;
 }
 
 .new-fruit {
@@ -386,15 +385,10 @@ button.stock__fruit:active {
   pointer-events: none;
 }
 
+/* Above 50 kg (likely a typo, e.g. 250 instead of 25): the field turns orange */
 .qty--warn .qty__field input {
-  background: var(--warn-bg);
-}
-
-.qty__warning {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--warn);
+  background: var(--alert-bg);
+  box-shadow: inset 0 0 0 2px var(--alert);
 }
 
 /* Pop-ups (name picker, add fruit) */

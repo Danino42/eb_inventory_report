@@ -12,7 +12,7 @@ interface Props {
   label: string
 }
 
-/** − [ 12 kg ] + : number keypad on tap, ±1 buttons (hold to repeat), warning above 50 kg, never negative */
+/** − [ 12 kg ] + : number keypad on tap, ±1 buttons (hold to repeat), orange above 50 kg, never negative */
 export function QuantityInput({ value, unit, onChange, onStep, label }: Props) {
   const amount = parseAmount(value)
   const warn = unit === 'kg' && amount !== null && amount > KG_WARNING_LIMIT
@@ -45,11 +45,6 @@ export function QuantityInput({ value, unit, onChange, onStep, label }: Props) {
           +
         </RepeatButton>
       </div>
-      {warn && (
-        <p className="qty__warning" role="status">
-          Bist du sicher?
-        </p>
-      )}
     </div>
   )
 }

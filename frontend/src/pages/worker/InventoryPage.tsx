@@ -401,9 +401,9 @@ export function InventoryPage() {
                       value={amounts[fruit.dev_name]?.[variant] ?? ''}
                       onChange={(value) => setAmount(fruit.dev_name, variant, value)}
                       onStep={(delta) => addTo(fruit.dev_name, variant, delta)}
-                      onAddCrate={(kg) => addTo(fruit.dev_name, variant, kg)}
+                      onAdd={(delta) => addTo(fruit.dev_name, variant, delta)}
                       onRemove={isRemovable(fruit.dev_name) ? () => removeAdded(fruit.dev_name) : undefined}
-                      showVariant={key === 'addons'}
+                      addon={key === 'addons'}
                     />
                   ))}
                 </ul>

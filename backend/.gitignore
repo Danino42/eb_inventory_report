@@ -16,3 +16,6 @@ __pycache__/
 
 # Saved report emails (PDF, CSV, .eml)
 outbox/
+
+# Report recipients saved on the Verwaltung settings page (local development)
+data/*.local.json

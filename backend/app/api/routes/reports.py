@@ -6,10 +6,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo.errors import PyMongoError
 
+from app.api.deps import MailStore
 from app.core.config import Settings, get_settings
 from app.models.report import DeliveryInfo, InventoryReport, ReportResult
 from app.services.database import get_database
-from app.services.mailer import build_message, deliver
+from app.services.mail_settings_store import current_mail_settings
+from app.services.mailer import build_message, can_send, deliver
 from app.services.report_documents import build_csv, build_pdf, email_body, email_subject, file_stem
 from app.services.report_log import FileReportLog, MongoReportLog, ReportLog
 
@@ -26,11 +28,14 @@ def get_report_log(settings: Annotated[Settings, Depends(get_settings)]) -> Repo
 
 
 @router.get("/delivery")
-def delivery_info(settings: Annotated[Settings, Depends(get_settings)]) -> DeliveryInfo:
-    """Who receives the report email, so the tablet can show it before sending."""
+def delivery_info(
+    settings: Annotated[Settings, Depends(get_settings)], mail_store: MailStore
+) -> DeliveryInfo:
+    """Who receives the report email (test or production addresses, see the Verwaltung
+    settings page), so the tablet can show it before sending."""
+    recipients = current_mail_settings(mail_store, settings).recipients
     return DeliveryInfo(
-        recipients=settings.report_recipients,
-        email_enabled=bool(settings.smtp_host and settings.report_recipients),
+        recipients=recipients, email_enabled=bool(recipients and can_send(settings))
     )
 
 
@@ -39,6 +44,7 @@ def send_report(
     report: InventoryReport,
     settings: Annotated[Settings, Depends(get_settings)],
     log: Annotated[ReportLog, Depends(get_report_log)],
+    mail_store: MailStore,
 ) -> ReportResult:
     """Turns a filled-in form into an A4 PDF + CSV and emails both to the office.
 
@@ -54,17 +60,16 @@ def send_report(
         (f"{stem}.csv", build_csv(report), "text/csv"),
     ]
     subject = email_subject(report)
-    msg = build_message(settings, subject, email_body(report), attachments)
+    recipients = current_mail_settings(mail_store, settings).recipients
+    msg = build_message(settings, recipients, subject, email_body(report), attachments)
     try:
-        delivery, files = deliver(settings, msg, attachments, stem)
+        delivery, files = deliver(settings, recipients, msg, attachments, stem)
     except (smtplib.SMTPException, OSError) as exc:
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
             "Die E-Mail konnte nicht gesendet werden. Bitte später nochmals versuchen.",
         ) from exc
-    result = ReportResult(
-        delivery=delivery, recipients=settings.report_recipients, subject=subject, files=files
-    )
+    result = ReportResult(delivery=delivery, recipients=recipients, subject=subject, files=files)
     try:
         log.add(report, result, datetime.now(UTC))
     except (PyMongoError, OSError):

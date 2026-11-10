@@ -66,7 +66,12 @@ services:
       # MONGODB_URI: the mongodb+srv://... connection string from Atlas (Connect -> Drivers)
       - key: MONGODB_URI
         sync: false
+      # First test address; afterwards the addresses are set in Verwaltung -> Einstellungen
       - key: REPORT_RECIPIENTS
+        sync: false
+      # Sending: Render's free plan blocks the SMTP ports, so use Brevo's email API (free,
+      # 300 emails/day; SMTP_FROM must be a sender verified in Brevo), or SMTP on a paid plan
+      - key: BREVO_API_KEY
         sync: false
       - key: SMTP_HOST
         sync: false

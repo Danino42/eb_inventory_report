@@ -4,6 +4,7 @@ import { startAutoFlush } from './lib/reportQueue'
 import { AdminGate } from './pages/dev/AdminGate'
 import { FruitsDevPage } from './pages/dev/FruitsDevPage'
 import { OrderArticlesPage } from './pages/dev/OrderArticlesPage'
+import { SettingsPage } from './pages/dev/SettingsPage'
 import { HomePage } from './pages/HomePage'
 import { InventoryPage } from './pages/worker/InventoryPage'
 
@@ -19,6 +20,7 @@ function App() {
       <Route path="/verwaltung" element={<AdminGate />}>
         <Route index element={<FruitsDevPage />} />
         <Route path="bestellartikel" element={<OrderArticlesPage />} />
+        <Route path="einstellungen" element={<SettingsPage />} />
       </Route>
       {/* Old address of the catalogue page */}
       <Route path="/dev/fruits" element={<Navigate to="/verwaltung" replace />} />

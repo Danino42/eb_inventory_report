@@ -18,7 +18,12 @@ def outbox(tmp_path: Path):
     """Reports go to a temporary outbox and are never really emailed (nor stored in a real
     database, even if the local .env has a MONGODB_URI)."""
     settings = Settings(
-        report_recipients=["office@example.com"], smtp_host="", outbox_dir=tmp_path, mongodb_uri=""
+        report_recipients=["office@example.com"],
+        smtp_host="",
+        brevo_api_key="",
+        outbox_dir=tmp_path,
+        mongodb_uri="",
+        mail_settings_file=tmp_path / "mail_settings.json",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     yield tmp_path

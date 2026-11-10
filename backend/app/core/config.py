@@ -44,13 +44,21 @@ class Settings(BaseSettings):
     mongodb_uri: str = ""
     mongodb_db: str = "eb_inventory"
 
-    # Inventory reports: who receives the PDF + CSV email
+    # Inventory reports: who receives the PDF + CSV email (test / production addresses). Only the
+    # starting values: once the Verwaltung settings page is saved, its addresses are used
     report_recipients: list[str] = []
-    # SMTP for sending; if smtp_host is empty, emails are only saved to outbox_dir (as .eml)
+    production_recipients: list[str] = []
+    # Where that page is saved without MongoDB (local development; not in git)
+    mail_settings_file: Path = BACKEND_DIR / "data" / "mail_settings.local.json"
+
+    # Sending: Brevo's email API (over HTTPS, so it works on Render's free plan, which blocks the
+    # SMTP ports) or SMTP. With neither, emails are only saved to outbox_dir (as .eml).
+    brevo_api_key: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
+    # Sender of the emails (with Brevo: an address verified as sender there)
     smtp_from: str = "Earlybird Warenbestand <noreply@earlybird.local>"
     # Every report email (+ PDF, CSV) is also kept here as a copy
     outbox_dir: Path = BACKEND_DIR / "outbox"

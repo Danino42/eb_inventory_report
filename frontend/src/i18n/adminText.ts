@@ -61,6 +61,21 @@ const de = {
   checkingPin: 'PIN wird geprüft…',
   eraseDigit: 'Ziffer löschen',
 
+  // Settings
+  tabSettings: 'Einstellungen',
+  settingsTitle: 'Einstellungen',
+  reportEmails: 'Berichte per E-Mail',
+  sendTo: 'Senden an',
+  modeTest: 'Test',
+  modeProduction: 'Produktion',
+  testRecipients: 'Test-Empfänger',
+  productionRecipients: 'Produktiv-Empfänger',
+  emailConfigured: 'E-Mail-Versand ist eingerichtet.',
+  emailNotConfigured: 'Auf dem Server ist noch kein E-Mail-Versand eingerichtet: Berichte werden nur gespeichert.',
+  settingsSaved: 'Einstellungen gespeichert',
+  invalidEmails: 'Bitte gültige E-Mail-Adressen eingeben, mehrere mit Komma getrennt.',
+  activeListEmpty: 'Für die gewählten Empfänger ist keine Adresse eingetragen.',
+
   // Fruit catalogue
   fruitsTitle: 'Früchtekatalog',
   detailedView: 'Detailansicht',
@@ -156,6 +171,20 @@ const en: AdminText = {
   wrongPin: 'Wrong PIN',
   checkingPin: 'Checking PIN…',
   eraseDigit: 'Delete digit',
+
+  tabSettings: 'Settings',
+  settingsTitle: 'Settings',
+  reportEmails: 'Report emails',
+  sendTo: 'Send to',
+  modeTest: 'Test',
+  modeProduction: 'Production',
+  testRecipients: 'Test recipients',
+  productionRecipients: 'Production recipients',
+  emailConfigured: 'Email sending is set up.',
+  emailNotConfigured: 'Email sending is not set up on the server yet: reports are only saved.',
+  settingsSaved: 'Settings saved',
+  invalidEmails: 'Please enter valid email addresses, several separated by commas.',
+  activeListEmpty: 'The selected recipients have no address.',
 
   fruitsTitle: 'Fruit catalogue',
   detailedView: 'Detailed view',

@@ -12,6 +12,9 @@ export function AdminTabs() {
       <NavLink to="/verwaltung/bestellartikel" className="admin-tabs__tab">
         {t.tabOrders}
       </NavLink>
+      <NavLink to="/verwaltung/einstellungen" className="admin-tabs__tab">
+        {t.tabSettings}
+      </NavLink>
     </nav>
   )
 }

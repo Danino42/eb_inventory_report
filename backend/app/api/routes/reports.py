@@ -1,5 +1,4 @@
 import logging
-import smtplib
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -11,7 +10,7 @@ from app.core.config import Settings, get_settings
 from app.models.report import DeliveryInfo, InventoryReport, ReportResult
 from app.services.database import get_database
 from app.services.mail_settings_store import current_mail_settings
-from app.services.mailer import build_message, can_send, deliver
+from app.services.mailer import SendError, build_message, can_send, deliver, from_header
 from app.services.report_documents import build_csv, build_pdf, email_body, email_subject, file_stem
 from app.services.report_log import FileReportLog, MongoReportLog, ReportLog
 
@@ -60,11 +59,15 @@ def send_report(
         (f"{stem}.csv", build_csv(report), "text/csv"),
     ]
     subject = email_subject(report)
-    recipients = current_mail_settings(mail_store, settings).recipients
-    msg = build_message(settings, recipients, subject, email_body(report), attachments)
+    mail = current_mail_settings(mail_store, settings)
+    recipients = mail.recipients
+    sender = from_header(settings, mail.sender)
+    msg = build_message(sender, recipients, subject, email_body(report), attachments)
     try:
         delivery, files = deliver(settings, recipients, msg, attachments, stem)
-    except (smtplib.SMTPException, OSError) as exc:
+    except (SendError, OSError) as exc:
+        # The reason (e.g. Brevo's answer) goes to the server log; the tablet tries again later
+        logger.warning("Report %s not emailed: %s", report.report_id, exc)
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
             "Die E-Mail konnte nicht gesendet werden. Bitte später nochmals versuchen.",

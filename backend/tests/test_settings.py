@@ -55,7 +55,9 @@ def test_starting_values_come_from_the_server(config: Settings) -> None:
         "test_recipients": ["dev@example.com"],
         "production_recipients": ["office@example.com"],
         "use_production": False,
+        "sender": None,
         "email_configured": False,
+        "server_sender": "noreply@earlybird.local",
     }
     assert recipients_shown_before_sending() == ["dev@example.com"]
 
@@ -107,7 +109,10 @@ def test_settings_are_kept_in_mongodb(config: Settings, mongo_db) -> None:
         "use_production": False,
     }
     client.put("/api/settings/mail", json=saved, headers=pin(config))
-    assert mongo_db["settings"].find_one({"_id": "mail"}, {"_id": False}) == saved
+    assert mongo_db["settings"].find_one({"_id": "mail"}, {"_id": False}) == {
+        **saved,
+        "sender": None,
+    }
 
 
 class FakeResponse(io.BytesIO):
@@ -143,12 +148,76 @@ def test_brevo_sends_the_report_over_https(config: Settings, monkeypatch) -> Non
     assert csv["name"].endswith(".csv")
 
 
+def brevo_refuses(message: str):
+    """Fake urlopen: Brevo answers with an error like the real API (JSON code + message)"""
+
+    def urlopen(request, timeout):
+        body = json.dumps({"code": "unauthorized", "message": message}).encode()
+        raise urllib.error.HTTPError(request.full_url, 401, "Unauthorized", None, io.BytesIO(body))
+
+    return urlopen
+
+
 def test_brevo_error_keeps_the_report_on_the_tablet(config: Settings, monkeypatch) -> None:
     config.brevo_api_key = "wrong-key"
-
-    def failing_urlopen(request, timeout):
-        raise urllib.error.HTTPError(request.full_url, 401, "Unauthorized", None, None)
-
-    monkeypatch.setattr(mailer.urllib.request, "urlopen", failing_urlopen)
+    monkeypatch.setattr(mailer.urllib.request, "urlopen", brevo_refuses("Key not found"))
     # 5xx: the tablet keeps the report and tries again later
     assert client.post("/api/reports", json=REPORT).status_code == 502
+
+
+def test_sender_from_the_settings_page(config: Settings, monkeypatch) -> None:
+    config.brevo_api_key = "test-key"
+    sent: list[urllib.request.Request] = []
+    monkeypatch.setattr(
+        mailer.urllib.request, "urlopen", lambda r, timeout: sent.append(r) or FakeResponse(b"{}")
+    )
+    settings = {
+        "test_recipients": ["dev@example.com"],
+        "production_recipients": [],
+        "sender": "earlybird.inventory@example.com",
+    }
+    client.put("/api/settings/mail", json=settings, headers=pin(config))
+    client.post("/api/reports", json=REPORT)
+    sender = json.loads(sent[0].data)["sender"]
+    assert sender == {"name": "Earlybird Warenbestand", "email": "earlybird.inventory@example.com"}
+
+
+TEST_MAIL = {
+    "test_recipients": ["dev@example.com"],
+    "production_recipients": [],
+    "sender": "earlybird.inventory@example.com",
+}
+
+
+def test_test_email_uses_the_values_on_the_page(config: Settings, monkeypatch) -> None:
+    config.brevo_api_key = "test-key"
+    sent: list[urllib.request.Request] = []
+    monkeypatch.setattr(
+        mailer.urllib.request, "urlopen", lambda r, timeout: sent.append(r) or FakeResponse(b"{}")
+    )
+    response = client.post("/api/settings/mail/test", json=TEST_MAIL, headers=pin(config))
+    assert response.status_code == 200
+    assert response.json() == {
+        "sender": "Earlybird Warenbestand <earlybird.inventory@example.com>",
+        "recipients": ["dev@example.com"],
+    }
+    payload = json.loads(sent[0].data)
+    assert payload["to"] == [{"email": "dev@example.com"}]
+    assert "attachment" not in payload
+    # Testing does not save anything
+    assert client.get("/api/settings/mail", headers=pin(config)).json()["sender"] is None
+
+
+def test_test_email_shows_why_brevo_refused(config: Settings, monkeypatch) -> None:
+    config.brevo_api_key = "test-key"
+    reason = "We have detected you are using an unrecognised IP address 203.0.113.7"
+    monkeypatch.setattr(mailer.urllib.request, "urlopen", brevo_refuses(reason))
+    response = client.post("/api/settings/mail/test", json=TEST_MAIL, headers=pin(config))
+    assert response.status_code == 502
+    assert response.json()["detail"] == f"Brevo 401: {reason}"
+
+
+def test_test_email_needs_a_way_of_sending(config: Settings) -> None:
+    assert client.post("/api/settings/mail/test", json=TEST_MAIL).status_code == 401
+    response = client.post("/api/settings/mail/test", json=TEST_MAIL, headers=pin(config))
+    assert response.status_code == 409

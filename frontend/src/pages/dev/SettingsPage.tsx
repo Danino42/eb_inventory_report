@@ -1,7 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../../api/client'
-import { getMailSettings, saveMailSettings, type MailSettingsInfo } from '../../api/settings'
+import {
+  getMailSettings,
+  saveMailSettings,
+  sendTestMail,
+  type MailSettings,
+  type MailSettingsInfo,
+} from '../../api/settings'
 import { AdminTabs } from '../../components/AdminTabs'
 import { LanguageToggle } from '../../components/LanguageToggle'
 import { useAdminText } from '../../i18n/adminText'
@@ -12,22 +18,24 @@ import './SettingsPage.css'
 const toList = (text: string) => text.split(/[\s,;]+/).filter(Boolean)
 const toText = (list: string[]) => list.join(', ')
 
-/** Verwaltung settings: where the report emails go (test or production addresses) */
+/** Verwaltung settings: where the report emails go (test or production addresses), and from whom */
 export function SettingsPage() {
   const { t } = useAdminText()
   const [info, setInfo] = useState<MailSettingsInfo | null>(null)
   const [testText, setTestText] = useState('')
   const [productionText, setProductionText] = useState('')
   const [useProduction, setUseProduction] = useState(false)
+  const [senderText, setSenderText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [busy, setBusy] = useState<'save' | 'test' | null>(null)
 
   function show(settings: MailSettingsInfo) {
     setInfo(settings)
     setTestText(toText(settings.test_recipients))
     setProductionText(toText(settings.production_recipients))
     setUseProduction(settings.use_production)
+    setSenderText(settings.sender ?? '')
   }
 
   useEffect(() => {
@@ -50,18 +58,26 @@ export function SettingsPage() {
     return () => clearTimeout(timer)
   }, [notice])
 
-  async function save(e: FormEvent) {
-    e.preventDefault()
+  /** The form as settings; null (with an error shown) if the active list is empty */
+  function formSettings(): MailSettings | null {
     const settings = {
       test_recipients: toList(testText),
       production_recipients: toList(productionText),
       use_production: useProduction,
+      sender: senderText.trim() || null,
     }
     if ((useProduction ? settings.production_recipients : settings.test_recipients).length === 0) {
       setError(t.activeListEmpty)
-      return
+      return null
     }
-    setSaving(true)
+    return settings
+  }
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    const settings = formSettings()
+    if (!settings) return
+    setBusy('save')
     setError(null)
     try {
       show(await saveMailSettings(settings))
@@ -70,7 +86,25 @@ export function SettingsPage() {
       if (e instanceof ApiError) setError(e.status === 422 ? t.invalidEmails : e.message)
       else setError(t.nothingSaved)
     } finally {
-      setSaving(false)
+      setBusy(null)
+    }
+  }
+
+  /** Sends a test email with what is on the page (not saved); a failure shows the reason */
+  async function test() {
+    const settings = formSettings()
+    if (!settings) return
+    setBusy('test')
+    setError(null)
+    try {
+      const result = await sendTestMail(settings)
+      setNotice(t.testSent(result.recipients.join(', ')))
+    } catch (e) {
+      if (!(e instanceof ApiError)) setError(t.offline)
+      else if (e.status === 422) setError(t.invalidEmails)
+      else setError(`${t.testFailed} ${e.message}`)
+    } finally {
+      setBusy(null)
     }
   }
 
@@ -141,12 +175,31 @@ export function SettingsPage() {
               spellCheck={false}
             />
           </label>
+          <label className="settings__field">
+            <span className="settings__label">{t.sender}</span>
+            <input
+              type="email"
+              value={senderText}
+              placeholder={info.server_sender}
+              onChange={(e) => setSenderText(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
           <p className={`settings__status${info.email_configured ? '' : ' is-warning'}`}>
             {info.email_configured ? t.emailConfigured : t.emailNotConfigured}
           </p>
-          <div>
-            <button type="submit" className="btn btn--primary" disabled={saving}>
-              {saving ? t.saving : t.save}
+          <div className="settings__actions">
+            <button type="submit" className="btn btn--primary" disabled={busy !== null}>
+              {busy === 'save' ? t.saving : t.save}
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy !== null || !info.email_configured}
+              onClick={() => void test()}
+            >
+              {busy === 'test' ? t.testSending : t.sendTest}
             </button>
           </div>
         </form>

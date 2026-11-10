@@ -75,6 +75,11 @@ const de = {
   settingsSaved: 'Einstellungen gespeichert',
   invalidEmails: 'Bitte gültige E-Mail-Adressen eingeben, mehrere mit Komma getrennt.',
   activeListEmpty: 'Für die gewählten Empfänger ist keine Adresse eingetragen.',
+  sender: 'Absender',
+  sendTest: 'Test-E-Mail senden',
+  testSending: 'Wird gesendet…',
+  testSent: (to: string) => `Test-E-Mail gesendet an ${to}`,
+  testFailed: 'Test-E-Mail fehlgeschlagen:',
 
   // Fruit catalogue
   fruitsTitle: 'Früchtekatalog',
@@ -185,6 +190,11 @@ const en: AdminText = {
   settingsSaved: 'Settings saved',
   invalidEmails: 'Please enter valid email addresses, several separated by commas.',
   activeListEmpty: 'The selected recipients have no address.',
+  sender: 'Sender',
+  sendTest: 'Send test email',
+  testSending: 'Sending…',
+  testSent: (to) => `Test email sent to ${to}`,
+  testFailed: 'Test email failed:',
 
   fruitsTitle: 'Fruit catalogue',
   detailedView: 'Detailed view',

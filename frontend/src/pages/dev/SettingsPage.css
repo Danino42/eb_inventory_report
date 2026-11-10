@@ -37,6 +37,12 @@
   font-size: 0.95rem;
 }
 
+.settings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .settings__status {
   margin: 0;
   color: var(--muted);

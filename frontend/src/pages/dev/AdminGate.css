@@ -1,0 +1,129 @@
+/* PIN screen in front of the Verwaltung */
+.pin-page {
+  max-width: 1280px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+}
+
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  /* Sits a little above the middle, where the eye expects it */
+  padding-bottom: 8vh;
+}
+
+.pin__dots {
+  display: flex;
+  gap: 18px;
+}
+
+.pin__dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-strong);
+  border-radius: 50%;
+}
+
+.pin__dot.is-filled {
+  background: var(--text-strong);
+}
+
+.pin--wrong .pin__dot {
+  border-color: var(--danger);
+}
+
+.pin--wrong .pin__dots {
+  animation: pin-shake 0.35s;
+}
+
+@keyframes pin-shake {
+  25% {
+    transform: translateX(-8px);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin--wrong .pin__dots {
+    animation: none;
+  }
+}
+
+.pin__message {
+  min-height: 1.45em;
+  max-width: 320px;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.pin__message.is-error {
+  color: var(--danger);
+}
+
+.pin__keys {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  grid-auto-rows: 72px;
+  gap: 12px;
+}
+
+.pin__key {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  cursor: pointer;
+  /* Fast taps must not zoom the page */
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.pin__key:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.pin__key:active:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.pin__key:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pin__key--erase {
+  font-size: 1.25rem;
+}
+
+/* 8" tablet in landscape (~600 px high): smaller keys, so everything fits without scrolling */
+@media (max-height: 640px) {
+  .pin-page {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .pin {
+    gap: 12px;
+    padding-bottom: 0;
+  }
+
+  .pin__keys {
+    grid-template-columns: repeat(3, 64px);
+    grid-auto-rows: 60px;
+    gap: 10px;
+  }
+}

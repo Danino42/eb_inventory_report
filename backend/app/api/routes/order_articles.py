@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.admin_pin import ADMIN_PIN
 from app.core.config import get_settings
 from app.models.order_article import OrderArticle
 from app.services.database import open_list_store
@@ -44,7 +45,7 @@ def list_order_articles(
     return articles
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[ADMIN_PIN])
 def create_order_article(article: OrderArticle, store: Store) -> OrderArticle:
     if not article.id:
         article = article.model_copy(update={"id": f"art-{uuid4().hex[:8]}"})
@@ -56,7 +57,7 @@ def create_order_article(article: OrderArticle, store: Store) -> OrderArticle:
         ) from None
 
 
-@router.put("/{article_id}")
+@router.put("/{article_id}", dependencies=[ADMIN_PIN])
 def update_order_article(article_id: str, article: OrderArticle, store: Store) -> OrderArticle:
     # The id never changes through editing
     article = article.model_copy(update={"id": article_id})
@@ -66,7 +67,7 @@ def update_order_article(article_id: str, article: OrderArticle, store: Store) -
         raise _not_found(article_id) from None
 
 
-@router.delete("/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{article_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[ADMIN_PIN])
 def delete_order_article(article_id: str, store: Store) -> None:
     try:
         store.delete(article_id)

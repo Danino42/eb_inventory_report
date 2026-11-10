@@ -30,6 +30,13 @@ export function isTemporaryFailure(e: unknown): boolean {
   return e instanceof NetworkError || (e instanceof ApiError && e.status >= 500)
 }
 
+// PIN of the Verwaltung while it is open (see AdminGate); the server needs it for changes
+let adminPin: string | null = null
+
+export function setAdminPin(pin: string | null) {
+  adminPin = pin
+}
+
 interface RequestOptions {
   /** Give up after this many milliseconds (default: wait for the browser) */
   timeoutMs?: number
@@ -43,7 +50,11 @@ export async function request<T>(path: string, init?: RequestInit, options: Requ
     response = await fetch(`${BASE_URL}${path}`, {
       ...init,
       signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', ...init?.headers },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminPin ? { 'X-Admin-Pin': adminPin } : {}),
+        ...init?.headers,
+      },
     })
   } catch {
     throw new NetworkError('Keine Verbindung zum Server.')

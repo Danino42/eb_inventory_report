@@ -21,7 +21,8 @@ def client(request, tmp_path: Path, mongo_db):
     if request.param == "mongodb":
         store = MongoListStore.seeded_from(mongo_db["fruits"], store)
     app.dependency_overrides[get_fruit_store] = lambda: store
-    yield TestClient(app)
+    # Signed in to the Verwaltung: changes need the PIN
+    yield TestClient(app, headers={"X-Admin-Pin": get_settings().admin_pin})
     app.dependency_overrides.clear()
 
 
@@ -108,6 +109,17 @@ def test_rename_onto_existing_fruit_is_rejected(client: TestClient) -> None:
     banana = client.get("/api/fruits/banana").json()
     response = client.put("/api/fruits/banana", json={**banana, "dev_name": "kiwi"})
     assert response.status_code == 409
+
+
+def test_changes_need_the_pin(client: TestClient) -> None:
+    no_pin = TestClient(app)  # same catalogue copy, but without the PIN
+    assert no_pin.get("/api/fruits/banana").status_code == 200  # the worker form reads freely
+    assert no_pin.post("/api/fruits", json=NEW_FRUIT).status_code == 401
+    wrong = {"X-Admin-Pin": "wrong"}
+    banana = client.get("/api/fruits/banana").json()
+    assert no_pin.put("/api/fruits/banana", json=banana, headers=wrong).status_code == 401
+    assert no_pin.delete("/api/fruits/banana", headers=wrong).status_code == 401
+    assert client.get("/api/fruits/banana").status_code == 200  # nothing was changed
 
 
 def test_invalid_input_is_rejected(client: TestClient) -> None:

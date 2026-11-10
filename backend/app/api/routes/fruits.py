@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.admin_pin import ADMIN_PIN
 from app.core.config import get_settings
 from app.models.fruit import BoxType, Category, Fruit, Unit
 from app.services.database import open_list_store
@@ -60,7 +61,7 @@ def get_fruit(dev_name: str, store: Store) -> Fruit:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Fruit '{dev_name}' not found") from None
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[ADMIN_PIN])
 def create_fruit(fruit: Fruit, store: Store) -> Fruit:
     try:
         return store.create(fruit)
@@ -70,7 +71,7 @@ def create_fruit(fruit: Fruit, store: Store) -> Fruit:
         ) from None
 
 
-@router.put("/{dev_name}")
+@router.put("/{dev_name}", dependencies=[ADMIN_PIN])
 def update_fruit(dev_name: str, fruit: Fruit, store: Store) -> Fruit:
     try:
         return store.update(dev_name, fruit)
@@ -82,7 +83,7 @@ def update_fruit(dev_name: str, fruit: Fruit, store: Store) -> Fruit:
         ) from None
 
 
-@router.delete("/{dev_name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{dev_name}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[ADMIN_PIN])
 def delete_fruit(dev_name: str, store: Store) -> None:
     try:
         store.delete(dev_name)

@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -31,6 +32,11 @@ class Settings(BaseSettings):
 
     # Names offered in the worker form's name picker
     workers_file: Path = BACKEND_DIR / "data" / "workers.json"
+
+    # 4-digit PIN of the Verwaltung: opens it on the tablet, and the server only accepts changes
+    # to the catalogue and order articles with it. A shared lock against changes by mistake,
+    # not a login. Set ADMIN_PIN on the server to change it.
+    admin_pin: str = Field(default="7777", pattern=r"^\d{4}$")
 
     # MongoDB, e.g. a free MongoDB Atlas cluster. If set, the fruit catalogue, order articles and
     # sent reports are kept there for good (the JSON files above only fill it on first start).

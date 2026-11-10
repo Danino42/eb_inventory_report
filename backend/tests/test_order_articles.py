@@ -22,7 +22,8 @@ def client(request, tmp_path: Path, mongo_db):
     if request.param == "mongodb":
         store = MongoListStore.seeded_from(mongo_db["order_articles"], store)
     app.dependency_overrides[get_order_article_store] = lambda: store
-    yield TestClient(app)
+    # Signed in to the Verwaltung: changes need the PIN
+    yield TestClient(app, headers={"X-Admin-Pin": get_settings().admin_pin})
     app.dependency_overrides.clear()
 
 
@@ -69,6 +70,14 @@ def test_create_update_delete(client: TestClient) -> None:
 
     assert client.delete(f"/api/order-articles/{article['id']}").status_code == 204
     assert client.delete(f"/api/order-articles/{article['id']}").status_code == 404
+
+
+def test_changes_need_the_pin(client: TestClient) -> None:
+    no_pin = TestClient(app)  # same mock data copy, but without the PIN
+    assert no_pin.get("/api/order-articles").status_code == 200
+    assert no_pin.post("/api/order-articles", json=NEW).status_code == 401
+    assert no_pin.delete("/api/order-articles/art-001").status_code == 401
+    assert len(client.get("/api/order-articles").json()) == 32  # nothing was changed
 
 
 def test_invalid_articles_are_rejected(client: TestClient) -> None:

@@ -1,8 +1,38 @@
-# Render Blueprint for the backend (FastAPI). In Render: New -> Blueprint -> pick this repo.
-# Demo setup on the free plan: the service sleeps after 15 min idle, and its disk is wiped on every
-# restart/redeploy. So everything that must last (fruit catalogue, order articles, sent reports)
-# is kept in MongoDB Atlas; the outbox copies of the emails on the disk are only temporary.
+# Render Blueprint for the whole app. In Render: Blueprints -> this repo -> Sync after changes here.
+# Free plan: the backend sleeps after 15 min idle and its disk is wiped on every restart/redeploy.
+# So everything that must last (fruit catalogue, order articles, sent reports) is kept in MongoDB
+# Atlas; the outbox copies of the emails on the disk are only temporary. The frontend is static
+# files on Render's CDN and never sleeps.
 services:
+  # Frontend: the PWA (React + Vite), built into static files
+  - type: web
+    name: eb-inventory-report
+    runtime: static
+    buildCommand: cd frontend && npm ci --include=dev && npm run build
+    staticPublishPath: frontend/dist
+    autoDeploy: true
+    # Rebuild only when the frontend changes
+    buildFilter:
+      paths:
+        - frontend/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22.14.0"
+      # Backend address, built into the app
+      - key: VITE_API_URL
+        value: https://eb-inventory-backend-op64.onrender.com
+    headers:
+      # Always check for a new service worker, so app updates reach the tablet
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+    routes:
+      # App pages (/bestand, /verwaltung, ...) all load index.html; the app shows the page
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Backend: FastAPI
   - type: web
     name: eb-inventory-backend
     runtime: python
@@ -22,11 +52,11 @@ services:
       # Swiss time for the server clock ("Erstellt" on the PDF, email date)
       - key: TZ
         value: Europe/Zurich
-      # The Vercel frontend (production address and its preview deployments)
+      # The frontend above (and a suffixed address, if Render ever gives it one)
       - key: CORS_ORIGINS
-        value: '["https://eb-inventory-report.vercel.app"]'
+        value: '["https://eb-inventory-report.onrender.com"]'
       - key: CORS_ORIGIN_REGEX
-        value: '^https://eb-inventory-report(-[a-z0-9-]+)?\.vercel\.app$'
+        value: '^https://eb-inventory-report(-[a-z0-9-]+)?\.onrender\.com$'
       # Fruit icons for the PDF (Render checks out the whole repo here)
       - key: IMAGES_DIR
         value: /opt/render/project/src/frontend/src/images

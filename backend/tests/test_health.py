@@ -63,7 +63,9 @@ def test_cors_origin_pattern_for_hosted_frontend() -> None:
 
     from app.core.config import Settings
 
-    pattern = Settings(cors_origin_regex=r"https://eb-inventory-report(-[a-z0-9-]+)?\.vercel\.app")
+    pattern = Settings(
+        cors_origin_regex=r"^https://eb-inventory-report(-[a-z0-9-]+)?\.onrender\.com$"
+    )
     demo = FastAPI()
     demo.add_middleware(
         CORSMiddleware,
@@ -74,10 +76,10 @@ def test_cors_origin_pattern_for_hosted_frontend() -> None:
     demo.get("/ping")(lambda: "pong")
     c = TestClient(demo)
     headers = {"Access-Control-Request-Method": "GET"}
-    ok = "https://eb-inventory-report-git-main-danino42.vercel.app"
+    ok = "https://eb-inventory-report-k3x9.onrender.com"
     response = c.options("/ping", headers={**headers, "Origin": ok})
     assert response.headers.get("access-control-allow-origin") == ok
-    other = "https://evil-site.vercel.app"
+    other = "https://evil-site.onrender.com"
     response = c.options("/ping", headers={**headers, "Origin": other})
     assert "access-control-allow-origin" not in response.headers
 

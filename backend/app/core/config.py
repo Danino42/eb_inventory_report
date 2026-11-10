@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Frontend origins allowed to call the API (Vite dev server and preview by default)
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
-    # Optional pattern for hosted frontends whose address changes, e.g. Vercel preview deployments
+    # Optional pattern for hosted frontends whose address may vary, e.g. a suffixed Render address
     cors_origin_regex: str | None = None
 
     # Fruit catalogue (seasonal calendar), edited through /api/fruits

@@ -26,10 +26,25 @@ export function formatAmount(value: number): string {
 /** Step sizes of the − / + buttons */
 export type StepDelta = -1 | 1
 
-/** − / + buttons: change by one, never below zero */
-export function stepAmount(text: string, delta: StepDelta): string {
+/** − / + buttons (one unit) and crate taps (one crate): add or take away, never below zero */
+export function addAmount(text: string, delta: number): string {
   const next = Math.max(0, (parseAmount(text) ?? 0) + delta)
   return formatAmount(next)
 }
 
 export const UNIT_SHORT: Record<Unit, string> = { kg: 'kg', pcs: 'Stk' }
+
+/** For now a crate (Kiste) of any kg fruit counts as 13.5 kg; later each fruit gets its own
+    value in the catalogue */
+export const CRATE_KG = 13.5
+
+/** kg in one crate of this fruit, or null if it is not counted in crates (Stk) */
+export function crateKg(fruit: { unit: Unit }): number | null {
+  return fruit.unit === 'kg' ? CRATE_KG : null
+}
+
+/** The kg as crates: "1 Kiste", "2 Kisten", "1,9 Kisten" (after fine adjustments) */
+export function formatCrates(kg: number, perCrate: number): string {
+  const crates = Math.round((kg / perCrate) * 10) / 10
+  return `${formatAmount(crates)} ${crates === 1 ? 'Kiste' : 'Kisten'}`
+}

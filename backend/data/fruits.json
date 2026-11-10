@@ -649,7 +649,7 @@
     "name_de": "Trockenfrüchte",
     "article_number": "2160",
     "note": "Datteln / Aprikosen / Bergfeigen / Nuss- / Sport- / Xundmix",
-    "unit": "kg",
+    "unit": "pcs",
     "variants": ["bio"],
     "availability": {
       "standard": {
@@ -672,7 +672,7 @@
     "name_de": "Pfefferminze",
     "article_number": "2170",
     "note": "div. Kräuter Bund",
-    "unit": "kg",
+    "unit": "pcs",
     "variants": ["bio"],
     "availability": {
       "standard": {

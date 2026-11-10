@@ -5,22 +5,16 @@ import { sendReport, type InventoryReport, type ReportResult } from '../../api/r
 import { FruitIcon } from '../../components/FruitIcon'
 import { enqueueReport } from '../../lib/reportQueue'
 import { newId } from '../../lib/storage'
-import {
-  VARIANTS,
-  VARIANT_LABELS,
-  VARIANT_SHORT,
-  type FruitWithDerived,
-  type Unit,
-  type Variant,
-} from '../../types/fruit'
+import type { FruitWithDerived, Unit, Variant } from '../../types/fruit'
 import { AddFruitDialog } from './AddFruitDialog'
 import { EMPTY_IFCO, type IfcoState } from './ifco'
 import { IfcoSection } from './IfcoSection'
 import { NamePicker } from './NamePicker'
 import { NewFruitForm } from './NewFruitForm'
-import { parseAmount, stepAmount, type StepDelta } from './amount'
-import { QuantityInput } from './QuantityInput'
+import { addAmount, parseAmount } from './amount'
 import { ReviewDialog } from './ReviewDialog'
+import { SECTIONS, groupLines } from './sections'
+import { StockRow } from './StockRow'
 import { clearDraft, draftHasEntries, loadDraft, saveDraft, type Draft } from './draft'
 import { loadFormData } from './offlineData'
 import { defaultReportDate, formatReportDate, fromIsoDate } from './reportDate'
@@ -162,6 +156,8 @@ export function InventoryPage() {
     return [...seasonal, ...extra, ...customFruits]
   }, [allFruits, added, customFruits, month])
   const notShown = allFruits.filter((f) => !shown.includes(f))
+  // The amount fields in the form's three parts (Konventionell, Bio, Add-ons)
+  const lines = useMemo(() => groupLines(shown), [shown])
   const isRemovable = (devName: string) =>
     added.includes(devName) || customFruits.some((f) => f.dev_name === devName)
 
@@ -175,10 +171,11 @@ export function InventoryPage() {
     setAmounts((a) => ({ ...a, [devName]: { ...a[devName], [variant]: value } }))
   }
 
-  function stepFor(devName: string, variant: Variant, delta: StepDelta) {
+  /** − / + (one unit) and crate taps (one crate). Applied to the latest value, so quick taps all count */
+  function addTo(devName: string, variant: Variant, delta: number) {
     setAmounts((a) => ({
       ...a,
-      [devName]: { ...a[devName], [variant]: stepAmount(a[devName]?.[variant] ?? '', delta) },
+      [devName]: { ...a[devName], [variant]: addAmount(a[devName]?.[variant] ?? '', delta) },
     }))
   }
 
@@ -391,60 +388,35 @@ export function InventoryPage() {
 
       {!loading && !error && (
         <section className="stock" aria-label="Früchte">
-          <div className="stock__head" aria-hidden="true">
-            <span>Frucht</span>
-            {VARIANTS.map((v) => (
-              <span key={v}>{VARIANT_LABELS[v]}</span>
-            ))}
+          {SECTIONS.map(({ key, title }) =>
+            lines[key].length === 0 ? null : (
+              <div key={key} className="stock__section">
+                <h2 className="stock__title">{title}</h2>
+                <ul className="stock__list">
+                  {lines[key].map(({ fruit, variant }) => (
+                    <StockRow
+                      key={`${fruit.dev_name}:${variant}`}
+                      fruit={fruit}
+                      variant={variant}
+                      value={amounts[fruit.dev_name]?.[variant] ?? ''}
+                      onChange={(value) => setAmount(fruit.dev_name, variant, value)}
+                      onStep={(delta) => addTo(fruit.dev_name, variant, delta)}
+                      onAddCrate={(kg) => addTo(fruit.dev_name, variant, kg)}
+                      onRemove={isRemovable(fruit.dev_name) ? () => removeAdded(fruit.dev_name) : undefined}
+                      showVariant={key === 'addons'}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ),
+          )}
+          <div className="stock__row stock__row--new">
+            <div className="stock__fruit">
+              <FruitIcon devName="" size={44} />
+              <span className="stock__name">Neue Frucht</span>
+            </div>
+            <NewFruitForm onAdd={addCustom} />
           </div>
-          <ul className="stock__list">
-            {shown.map((f) => (
-              <li key={f.dev_name} className="stock__row">
-                <div className="stock__fruit">
-                  <FruitIcon devName={f.dev_name} size={44} />
-                  <div>
-                    <span className="stock__name">{f.name_de}</span>
-                    <span className="stock__meta">
-                      {f.article_number || 'Eigene Eingabe'}
-                      {isRemovable(f.dev_name) && (
-                        <button type="button" className="link-button" onClick={() => removeAdded(f.dev_name)}>
-                          Entfernen
-                        </button>
-                      )}
-                    </span>
-                  </div>
-                </div>
-                {VARIANTS.map((v) => (
-                  <div key={v} className="stock__cell">
-                    {f.variants.includes(v) && (
-                      <>
-                        {/* Phones stack the amounts, so each needs its own label there */}
-                        <span className="stock__variant" aria-hidden="true">
-                          {VARIANT_SHORT[v]}
-                        </span>
-                        <QuantityInput
-                          value={amounts[f.dev_name]?.[v] ?? ''}
-                          unit={f.unit}
-                          onChange={(value) => setAmount(f.dev_name, v, value)}
-                          onStep={(delta) => stepFor(f.dev_name, v, delta)}
-                          label={`${f.name_de} ${VARIANT_LABELS[v]}`}
-                        />
-                      </>
-                    )}
-                  </div>
-                ))}
-              </li>
-            ))}
-            <li className="stock__row stock__row--new">
-              <div className="stock__fruit">
-                <FruitIcon devName="" size={44} />
-                <span className="stock__name">Neue Frucht</span>
-              </div>
-              <div className="stock__new-form">
-                <NewFruitForm onAdd={addCustom} />
-              </div>
-            </li>
-          </ul>
           <button type="button" className="stock__add" onClick={() => setDialog('add')}>
             + Frucht aus der Liste
           </button>

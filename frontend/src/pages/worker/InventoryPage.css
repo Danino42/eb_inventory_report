@@ -86,30 +86,22 @@
   transition: width 0.2s;
 }
 
-/* Fruit list: fruit | Konventionell | Bio */
+/* Fruit list in three parts, counted top to bottom: Konventionell Hauptfrüchte, Bio
+   Hauptfrüchte, Add-ons (see sections.ts). Each row: the fruit and its amount. */
 .stock {
-  --stock-cols: minmax(180px, 1fr) 230px 230px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.stock__head {
+/* Part title. Stays on top while scrolling: Banane is in Konv. and Bio, the title says which */
+.stock__title {
   position: sticky;
   top: 0;
   z-index: 1;
-  display: grid;
-  grid-template-columns: var(--stock-cols);
-  gap: 12px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--header-bg);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.stock__head span:not(:first-child) {
-  text-align: center;
+  font-size: 1.05rem;
 }
 
 .stock__list {
@@ -120,52 +112,87 @@
 
 .stock__row {
   display: grid;
-  grid-template-columns: var(--stock-cols);
-  align-items: start;
-  gap: 12px;
-  padding: 10px 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border);
 }
 
+/* Icon + name. For kg fruits it is a button: one tap adds a whole crate */
 .stock__fruit {
+  justify-self: start;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 52px;
+  min-width: min(100%, 280px);
+  min-height: 60px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+button.stock__fruit {
+  border-color: var(--border-strong);
+  background: var(--bg);
+  cursor: pointer;
+  /* Quick taps must neither zoom nor select text */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button.stock__fruit:hover {
+  background: var(--hover);
+}
+
+button.stock__fruit:active {
+  background: var(--surface-2);
+}
+
+.stock__label {
+  display: grid;
 }
 
 .stock__name {
-  display: block;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-strong);
 }
 
 .stock__meta {
-  display: flex;
-  gap: 12px;
   font-size: 0.8rem;
   color: var(--muted);
 }
 
-.stock__cell {
-  display: flex;
-  justify-content: center;
+/* Crates so far, worked out from the kg (after a fine adjustment e.g. "1,9 Kisten") */
+.stock__crates {
+  margin-left: auto;
+  padding-left: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
 }
 
-/* "Konv." / "Bio" next to each amount: only in the phone layout (see the end of this file) */
-.stock__variant {
-  display: none;
+.stock__amount {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.stock__remove {
+  justify-self: end;
 }
 
 /* Last row: type a fruit that is not in the catalogue */
 .stock__row--new {
-  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
   background: var(--hover);
 }
 
-.stock__new-form {
-  grid-column: 2 / -1;
+.stock__row--new .stock__fruit {
+  min-width: 0;
 }
 
 .new-fruit {
@@ -753,43 +780,8 @@
   font-size: 1.15rem;
 }
 
-/* 8" tablet in portrait (~600 px wide): name and both amounts still on one line,
-   with slightly narrower steppers (44 px buttons stay finger-sized) */
+/* 8" tablet in portrait (~600 px wide): the new-fruit row gets a bit tighter */
 @media (max-width: 760px) {
-  .stock {
-    --stock-cols: minmax(110px, 1fr) 176px 176px;
-  }
-
-  .stock__head,
-  .stock__row {
-    gap: 8px;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .stock__fruit {
-    gap: 8px;
-  }
-
-  .stock__name {
-    font-size: 1rem;
-    hyphens: auto;
-    overflow-wrap: break-word;
-  }
-
-  .qty__step {
-    width: 44px;
-  }
-
-  .qty__field {
-    width: 88px;
-  }
-
-  .qty__field input {
-    padding-right: 30px;
-    font-size: 1.1rem;
-  }
-
   .new-fruit__unit button {
     min-width: 44px;
   }
@@ -799,40 +791,19 @@
   }
 }
 
-/* Phones: one column. Each amount gets its own line under the fruit name, labelled Konv. / Bio,
-   so the field is wide enough for amounts like 48.75 (side by side they were cut off) */
+/* Phones: the amount goes under the fruit, both use the full width */
 @media (max-width: 520px) {
-  .stock {
-    --stock-cols: 1fr;
+  .stock__row,
+  .stock__row--new {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .stock__head {
-    display: none;
+  .stock__fruit {
+    justify-self: stretch;
   }
 
-  .stock__cell {
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  /* Variant this fruit does not have (e.g. Zitrone: Bio only) */
-  .stock__cell:empty {
-    display: none;
-  }
-
-  .stock__variant {
-    display: block;
-    flex: none;
-    width: 48px;
-    /* Centred next to the 52 px field; a "Bist du sicher?" warning goes below the field */
-    line-height: 52px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-
-  .qty {
-    flex: 1;
+  .stock__amount {
+    justify-items: stretch;
   }
 
   .qty__row {
@@ -846,10 +817,6 @@
   }
 
   /* New fruit: name on its own line, kg/Stk and Hinzufügen below */
-  .stock__new-form {
-    grid-column: 1 / -1;
-  }
-
   .new-fruit {
     flex-wrap: wrap;
   }

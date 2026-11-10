@@ -1,5 +1,5 @@
 import ifcoIcon from '../../images/ifco.png'
-import { stepAmount } from './amount'
+import { addAmount } from './amount'
 import type { IfcoState } from './ifco'
 import { QuantityInput } from './QuantityInput'
 
@@ -23,7 +23,7 @@ export function IfcoSection({ value, onChange }: Props) {
           value={value.returned}
           unit="pcs"
           onChange={(returned) => onChange((s) => ({ ...s, returned }))}
-          onStep={(delta) => onChange((s) => ({ ...s, returned: stepAmount(s.returned, delta) }))}
+          onStep={(delta) => onChange((s) => ({ ...s, returned: addAmount(s.returned, delta) }))}
           label="IFCOs zurück erhalten"
         />
       </div>

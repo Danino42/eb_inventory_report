@@ -288,7 +288,7 @@ export function FruitsDevPage() {
                         <span className="fruit-name">
                           <FruitIcon devName={f.dev_name} size={36} />
                           <span>
-                            {lang === 'de' ? f.name_de : f.name_en}
+                            {lang === 'de' ? f.name_de : f.name_en || f.name_de}
                             {f.note && <small className="note">{f.note}</small>}
                           </span>
                         </span>

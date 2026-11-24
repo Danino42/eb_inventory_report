@@ -49,21 +49,6 @@ function parseCrateContent(text: string): number | null {
 
 const ALL_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
 
-const UMLAUTS: Record<string, string> = { ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }
-
-/** Suggests a dev name from the English name, e.g. "Mini Watermelon" -> "mini_watermelon" */
-function toDevName(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[äöüß]/g, (c) => UMLAUTS[c])
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-  // Dev names must start with a letter
-  return /^[0-9]/.test(slug) ? `fruit_${slug}` : slug
-}
-
 /** Strips derived fields (box_types, months) the API adds, so only stored fields are sent back */
 function toDraft(fruit: Fruit): Fruit {
   const { dev_name, name_en, name_de, article_number, note, unit, crate_content, variants, availability } = fruit
@@ -85,8 +70,8 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
   const { t, lang } = useAdminText()
   const [initial] = useState<Fruit>(() => toDraft(fruit ?? EMPTY_FRUIT))
   const [draft, setDraft] = useState<Fruit>(initial)
-  // For new fruits the dev name follows the English name until someone edits it by hand
-  const [devNameEdited, setDevNameEdited] = useState(!isNew)
+  /** The fruit's name in the page language; the English one may be empty */
+  const nameOf = (f: Fruit) => (lang === 'de' ? f.name_de : f.name_en.trim() || f.name_de)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -143,10 +128,6 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     })
   }
 
-  function setEnglishName(name: string) {
-    setDraft((d) => ({ ...d, name_en: name, dev_name: devNameEdited ? d.dev_name : toDevName(name) }))
-  }
-
   const isDirty = JSON.stringify(draft) !== JSON.stringify(initial) || picture !== null || cropSrc !== null
 
   /** Close via Cancel or Esc; asks first if something was changed */
@@ -196,11 +177,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     try {
       onSaved(await action())
     } catch (e) {
-      if (e instanceof ApiError && e.status === 409) {
-        setError(t.devNameTaken(draft.dev_name))
-      } else {
-        setError(e instanceof ApiError ? e.message : t.nothingSaved)
-      }
+      setError(e instanceof ApiError ? e.message : t.nothingSaved)
     } finally {
       setBusy(false)
     }
@@ -214,14 +191,22 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     const availability = Object.fromEntries(
       Object.entries(draft.availability).filter(([, a]) => a.months.length > 0),
     )
-    const payload = { ...draft, crate_content: crateContent, dev_name: draft.dev_name.trim(), availability }
-    const shownName = lang === 'de' ? payload.name_de : payload.name_en
+    // New fruits get their dev name from the server (made from the name); existing ones keep it
+    const payload = {
+      ...draft,
+      name_de: draft.name_de.trim(),
+      name_en: draft.name_en.trim(),
+      crate_content: crateContent,
+      dev_name: isNew ? '' : fruit.dev_name,
+      availability,
+    }
+    const shownName = nameOf(payload)
     run(async () => {
-      await (isNew ? createFruit(payload) : updateFruit(fruit.dev_name, payload))
+      const saved = await (isNew ? createFruit(payload) : updateFruit(fruit.dev_name, payload))
       if (picture) {
         // The fruit is saved at this point; a failed picture is reported, not undone
         try {
-          await uploadFruitImage(payload.dev_name, picture.png)
+          await uploadFruitImage(saved.dev_name, picture.png)
         } catch (e) {
           return t.savedWithoutPicture(shownName, e instanceof ApiError ? e.message : '')
         }
@@ -232,7 +217,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
 
   function handleDelete() {
     if (!fruit) return
-    const shownName = lang === 'de' ? fruit.name_de : fruit.name_en
+    const shownName = nameOf(fruit)
     if (!window.confirm(t.confirmDeleteFruit(shownName))) return
     run(() => deleteFruit(fruit.dev_name).then(() => t.deleted(shownName)))
   }
@@ -240,7 +225,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
   return (
     <dialog ref={dialogRef} className="editor" onCancel={handleEscape} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <h2>{isNew ? t.addFruit : t.editFruit(lang === 'de' ? fruit.name_de : fruit.name_en)}</h2>
+        <h2>{isNew ? t.addFruit : t.editFruit(nameOf(fruit))}</h2>
 
         <div className="editor__grid">
           <label>
@@ -249,20 +234,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
           </label>
           <label>
             {t.englishName}
-            <input value={draft.name_en} onChange={(e) => setEnglishName(e.target.value)} required />
-          </label>
-          <label>
-            {t.devName}
-            <input
-              value={draft.dev_name}
-              onChange={(e) => {
-                setDevNameEdited(true)
-                set('dev_name', e.target.value)
-              }}
-              pattern="[a-z][a-z0-9_]*"
-              title={t.devNameHint}
-              required
-            />
+            <input value={draft.name_en} onChange={(e) => set('name_en', e.target.value)} />
           </label>
           <label>
             {t.unit}
@@ -275,7 +247,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
             </select>
           </label>
           <label>
-            {t.crateContent}
+            {t.crateContentLabel}
             <span className="editor__with-unit">
               <input
                 value={crateText}

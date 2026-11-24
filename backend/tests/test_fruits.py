@@ -220,3 +220,39 @@ def test_invalid_pictures_are_rejected(client: TestClient) -> None:
     assert upload(client, "no_such_fruit", png()).status_code == 404
     assert upload(TestClient(app), "banana", png()).status_code == 401  # needs the PIN
     assert client.get("/api/fruits/banana").json()["image_version"] is None
+
+
+def test_dev_name_is_made_from_the_name(client: TestClient) -> None:
+    without_id = {k: v for k, v in NEW_FRUIT.items() if k != "dev_name"}
+    assert client.post("/api/fruits", json=without_id).json()["dev_name"] == "quince"
+    # Taken: a number is added
+    assert client.post("/api/fruits", json=without_id).json()["dev_name"] == "quince-2"
+    assert client.post("/api/fruits", json=without_id).json()["dev_name"] == "quince-3"
+    # Catalogue fruits count as taken too
+    banana = {**without_id, "name_en": "Banana"}
+    assert client.post("/api/fruits", json=banana).json()["dev_name"] == "banana-2"
+    # No English name: made from the German one
+    german_only = {**without_id, "name_en": "", "name_de": "Äpfel grün"}
+    created = client.post("/api/fruits", json=german_only)
+    assert created.status_code == 201
+    assert created.json()["dev_name"] == "aepfel_gruen"
+
+
+def test_dev_names_for_unusual_names() -> None:
+    from app.services.dev_names import dev_name_for, unique_dev_name
+
+    assert dev_name_for("Mini Watermelon") == "mini_watermelon"
+    assert dev_name_for("  Crème brûlée! ") == "creme_brulee"
+    assert dev_name_for("3 Kiwis") == "fruit_3_kiwis"  # must start with a letter
+    assert dev_name_for("Custom 1") == "fruit_custom_1"  # custom_… is the worker form's
+    assert dev_name_for("!!!") == "fruit"
+    assert unique_dev_name("kiwi", {"kiwi", "kiwi-2"}) == "kiwi-3"
+
+
+def test_new_fruit_without_months_is_still_listed(client: TestClient) -> None:
+    # Added in the Verwaltung before its season is known: it must not vanish from the list
+    client.post("/api/fruits", json={"name_de": "Kaktusfeige", "name_en": "Prickly Pear"})
+    assert "prickly_pear" in names(client.get("/api/fruits"))
+    assert "prickly_pear" in names(client.get("/api/fruits", params={"q": "kaktus"}))
+    # Filtering by month still shows only fruits that are available then
+    assert "prickly_pear" not in names(client.get("/api/fruits", params={"month": 11}))

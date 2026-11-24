@@ -30,6 +30,8 @@ function seasonStart(months: number[] | undefined): number {
 function compare(a: FruitWithDerived, b: FruitWithDerived, key: SortKey): number {
   if (key === 'months') return seasonStart(a.months) - seasonStart(b.months)
   if (key === 'crate_content') return (a.crate_content ?? 1) - (b.crate_content ?? 1)
+  // Fruits without an English name are listed under their German one
+  if (key === 'name_en') return collator.compare(a.name_en || a.name_de, b.name_en || b.name_de)
   if (isBox(key)) return seasonStart(a.availability[key]?.months) - seasonStart(b.availability[key]?.months)
   return collator.compare(a[key], b[key])
 }

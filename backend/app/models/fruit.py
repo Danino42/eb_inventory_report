@@ -31,11 +31,15 @@ class BoxAvailability(BaseModel):
         return sorted(set(months))
 
 
+# Stable identifier used in code and data, e.g. "apple_gala" or "banana-2" (see dev_names.py)
+DEV_NAME_PATTERN = r"^[a-z][a-z0-9_-]*$"
+
+
 class Fruit(BaseModel):
-    # Stable identifier used in code and data, e.g. "apple_gala"
-    dev_name: str = Field(pattern=r"^[a-z][a-z0-9_]*$", max_length=50)
-    name_en: str = Field(min_length=1, max_length=80)
+    dev_name: str = Field(pattern=DEV_NAME_PATTERN, max_length=50)
     name_de: str = Field(min_length=1, max_length=80)
+    # Optional: without it the app shows the German name
+    name_en: str = Field(default="", max_length=80)
     # Article number in Earlybird's system (NF-12); demo values until the real ones are known
     article_number: str = Field(default="", max_length=20)
     # Small extra info shown under the name, e.g. the apple varieties behind "apple_2"
@@ -111,3 +115,9 @@ class FruitOut(Fruit):
     (part of the picture's address, so a new picture shows at once)"""
 
     image_version: str | None = None
+
+
+class NewFruit(Fruit):
+    """A fruit to add: without a dev name, the server makes one from the name"""
+
+    dev_name: str = Field(default="", pattern=rf"^$|{DEV_NAME_PATTERN}", max_length=50)

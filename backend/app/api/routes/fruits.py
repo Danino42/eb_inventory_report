@@ -7,8 +7,9 @@ from pydantic import BaseModel
 from app.api.admin_pin import ADMIN_PIN
 from app.api.deps import ImageStore
 from app.core.config import get_settings
-from app.models.fruit import BoxType, Category, Fruit, FruitOut, Unit
+from app.models.fruit import BoxType, Category, Fruit, FruitOut, NewFruit, Unit
 from app.services.database import open_list_store
+from app.services.dev_names import dev_name_for, unique_dev_name
 from app.services.fruit_images import MAX_BYTES, InvalidImageError, check_png
 from app.services.fruit_store import FruitExistsError, FruitNotFoundError, FruitStore
 from app.services.item_store import ItemStore
@@ -52,7 +53,10 @@ def list_fruits(
 ) -> list[FruitOut]:
     """All fruits, optionally filtered. month/box_type/category are checked per box type,
     e.g. month=10&box_type=bio returns what the Bio box offers in October."""
-    fruits = [f for f in store.all() if f.is_available(month, box_type, category)]
+    fruits = store.all()
+    # Without these filters every fruit is listed, also new ones without any months yet
+    if month or box_type or category:
+        fruits = [f for f in fruits if f.is_available(month, box_type, category)]
     if unit:
         fruits = [f for f in fruits if f.unit == unit]
     if q:
@@ -79,13 +83,28 @@ def get_fruit(dev_name: str, store: Store, images: ImageStore) -> FruitOut:
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, dependencies=[ADMIN_PIN])
-def create_fruit(fruit: Fruit, store: Store) -> Fruit:
-    try:
-        return store.create(fruit)
-    except FruitExistsError:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, f"Fruit '{fruit.dev_name}' already exists"
-        ) from None
+def create_fruit(new: NewFruit, store: Store) -> Fruit:
+    """Adds a fruit. Without a dev name one is made from the English name (else the German
+    one), e.g. "banana"; if another fruit has it already: "banana-2", "banana-3", ..."""
+    data = new.model_dump()
+    if new.dev_name:
+        try:
+            return store.create(Fruit.model_validate(data))
+        except FruitExistsError:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, f"Fruit '{new.dev_name}' already exists"
+            ) from None
+    base = dev_name_for(new.name_en.strip() or new.name_de)
+    # Tried again if another fruit takes the same name at the same moment
+    for _ in range(5):
+        taken = {f.dev_name for f in store.all()}
+        try:
+            return store.create(
+                Fruit.model_validate({**data, "dev_name": unique_dev_name(base, taken)})
+            )
+        except FruitExistsError:
+            continue
+    raise HTTPException(status.HTTP_409_CONFLICT, f"No free dev name for '{new.name_de}'")
 
 
 @router.put("/{dev_name}", dependencies=[ADMIN_PIN])

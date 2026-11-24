@@ -9,7 +9,7 @@ interface Props {
   value: string
   onChange: (value: string) => void
   onStep: (delta: StepDelta) => void
-  /** Adds one crate ("Inhalt" of the fruit, e.g. 13.5 kg; 1 for most add-ons) */
+  /** Adds one crate: the fruit's "Inhalt (pro Kiste)", 1 until it is set in the Verwaltung */
   onAdd: (delta: number) => void
   /** Only for fruits added by hand for this report */
   onRemove?: () => void

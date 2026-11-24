@@ -147,9 +147,11 @@ def test_saved_file_keeps_compact_format(tmp_path: Path) -> None:
 
 
 def test_crate_content(client: TestClient) -> None:
-    # "Inhalt": a Hauptfrucht crate is 13.5 kg (as before it could be set), an add-on counts 1
-    assert client.get("/api/fruits/banana").json()["crate_content"] == 13.5
+    # "Inhalt": 1 for every fruit until it is set in the Verwaltung
+    assert client.get("/api/fruits/banana").json()["crate_content"] == 1
     assert client.get("/api/fruits/lemon").json()["crate_content"] == 1
+    new = {"name_de": "Mispel", "name_en": "Medlar"}  # added without an Inhalt
+    assert client.post("/api/fruits", json=new).json()["crate_content"] == 1
     # One decimal place; at least 0.1
     created = client.post("/api/fruits", json={**NEW_FRUIT, "crate_content": 12.345}).json()
     assert created["crate_content"] == 12.3
@@ -157,16 +159,12 @@ def test_crate_content(client: TestClient) -> None:
     assert client.post("/api/fruits", json=zero).status_code == 422
 
 
-def test_crate_content_of_fruits_saved_before_it_existed() -> None:
+def test_fruits_saved_before_inhalt_existed_count_1() -> None:
     from app.models.fruit import Fruit
 
-    hauptfrucht = {"dev_name": "kiwi", "name_en": "Kiwi", "name_de": "Kiwi", "unit": "kg"}
-    hauptfrucht["availability"] = {"standard": {"category": "addon"}, "bio": {"category": "box"}}
-    assert Fruit.model_validate(hauptfrucht).crate_content == 13.5
-    # Add-on in every box (Trockenfrüchte, even in kg) or counted in pieces: 1
-    dried = {**hauptfrucht, "availability": {"bio": {"category": "addon"}}}
-    assert Fruit.model_validate(dried).crate_content == 1
-    assert Fruit.model_validate({**hauptfrucht, "unit": "pcs"}).crate_content == 1
+    stored = {"dev_name": "kiwi", "name_de": "Kiwi", "unit": "kg"}
+    stored["availability"] = {"bio": {"category": "box", "months": [11]}}
+    assert Fruit.model_validate(stored).crate_content == 1
 
 
 def png(color: str = "red", size: int = 8) -> bytes:

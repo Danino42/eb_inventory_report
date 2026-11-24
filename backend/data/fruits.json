@@ -6,7 +6,7 @@
     "article_number": "1010",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -30,7 +30,7 @@
     "article_number": "1020",
     "note": "1. Kl.",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -54,7 +54,7 @@
     "article_number": "1030",
     "note": "Golden / Pinova / Diwa / Braeburn / Pink Rose, 1. Kl.",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -78,7 +78,7 @@
     "article_number": "1040",
     "note": "Conference / Kaiser Alexander, 1. Kl.",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -102,7 +102,7 @@
     "article_number": "1050",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -126,7 +126,7 @@
     "article_number": "1060",
     "note": "Blond / Blutorangen",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -150,7 +150,7 @@
     "article_number": "1070",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -174,7 +174,7 @@
     "article_number": "1080",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -198,7 +198,7 @@
     "article_number": "1090",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -222,7 +222,7 @@
     "article_number": "1100",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -246,7 +246,7 @@
     "article_number": "1110",
     "note": "",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -270,7 +270,7 @@
     "article_number": "1120",
     "note": "Standard: 500 g",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {
@@ -294,7 +294,7 @@
     "article_number": "1130",
     "note": "Standard: 500 g",
     "unit": "kg",
-    "crate_content": 13.5,
+    "crate_content": 1.0,
     "variants": ["conventional", "bio"],
     "availability": {
       "standard": {

@@ -19,3 +19,6 @@ outbox/
 
 # Report recipients saved on the Verwaltung settings page (local development)
 data/*.local.json
+
+# Fruit pictures uploaded in the Verwaltung (local development)
+data/fruit_images/

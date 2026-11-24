@@ -60,6 +60,9 @@ export interface Fruit {
   article_number: string
   note: string
   unit: Unit
+  /** "Inhalt": what one crate holds, in the fruit's unit (one decimal); a tap on the fruit in
+      the worker form adds this */
+  crate_content: number
   /** Which stock columns (Konventionell / Bio) the worker form shows */
   variants: Variant[]
   availability: Partial<Record<BoxType, BoxAvailability>>
@@ -69,6 +72,8 @@ export interface Fruit {
 export interface FruitWithDerived extends Fruit {
   box_types: BoxType[]
   months: number[]
+  /** Set if a picture was uploaded in the Verwaltung (changes with every new picture) */
+  image_version?: string | null
 }
 
 export interface FruitFilters {

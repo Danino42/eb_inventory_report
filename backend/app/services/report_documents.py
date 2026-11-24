@@ -2,6 +2,7 @@
 
 import csv
 import io
+from collections.abc import Callable
 from datetime import date, datetime
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -10,6 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     Image,
     KeepInFrame,
@@ -63,11 +65,19 @@ def col_widths(*shares: float) -> list[float]:
 ICON_SIZE = 6 * mm
 
 
-def icon(path: Path, size: float = ICON_SIZE, align: str = "CENTER") -> Image | str:
-    """The picture if it exists, otherwise an empty cell (e.g. hand-typed fruits)"""
-    if not path.is_file():
-        return ""
-    image = Image(str(path), width=size, height=size, mask="auto")
+def icon(source: Path | bytes, size: float = ICON_SIZE, align: str = "CENTER") -> Image | str:
+    """The picture (a file, or one uploaded in the Verwaltung) if it can be used, otherwise an
+    empty cell (e.g. hand-typed fruits)"""
+    if isinstance(source, Path):
+        if not source.is_file():
+            return ""
+        image = Image(str(source), width=size, height=size, mask="auto")
+    else:
+        try:
+            ImageReader(io.BytesIO(source)).getSize()
+        except Exception:  # a broken picture must never stop the report
+            return ""
+        image = Image(io.BytesIO(source), width=size, height=size, mask="auto")
     image.hAlign = align
     return image
 
@@ -109,8 +119,16 @@ def empty_count(report: InventoryReport) -> int:
 # --- PDF -------------------------------------------------------------------------------------
 
 
-def build_pdf(report: InventoryReport, created_at: datetime, images_dir: Path) -> bytes:
-    """One A4 page: header, fruit table with icons (empty fields in soft orange), IFCO, notes."""
+def build_pdf(
+    report: InventoryReport,
+    created_at: datetime,
+    images_dir: Path,
+    uploaded: Callable[[str], bytes | None] | None = None,
+) -> bytes:
+    """One A4 page: header, fruit table with icons (empty fields in soft orange), IFCO, notes.
+
+    uploaded: pictures from the Verwaltung by dev name; they win over the built-in icons.
+    """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -143,7 +161,7 @@ def build_pdf(report: InventoryReport, created_at: datetime, images_dir: Path) -
             ),
         ),
         Spacer(1, 5 * mm),
-        _fruit_table(report, base, images_dir / "fruit_icons"),
+        _fruit_table(report, base, images_dir / "fruit_icons", uploaded),
     ]
 
     if report.ifco is not None:
@@ -178,7 +196,12 @@ def build_pdf(report: InventoryReport, created_at: datetime, images_dir: Path) -
     return buffer.getvalue()
 
 
-def _fruit_table(report: InventoryReport, base: ParagraphStyle, icons_dir: Path) -> Table:
+def _fruit_table(
+    report: InventoryReport,
+    base: ParagraphStyle,
+    icons_dir: Path,
+    uploaded: Callable[[str], bytes | None] | None,
+) -> Table:
     # Columns: Art.-Nr. | icon | Frucht | Konventionell | Bio | Einheit ("Frucht" spans icon + name)
     rows: list[list] = [["Art.-Nr.", "Frucht", "", "Konventionell", "Bio", "Einheit"]]
     style = [
@@ -203,7 +226,7 @@ def _fruit_table(report: InventoryReport, base: ParagraphStyle, icons_dir: Path)
             name += ' <font size="8" color="#8A8A8A">(eigene Eingabe)</font>'
         row = [
             first.article_number or "–",
-            icon(icons_dir / f"{first.dev_name}.png"),
+            icon((uploaded and uploaded(first.dev_name)) or icons_dir / f"{first.dev_name}.png"),
             Paragraph(name, base),
         ]
         for c, variant in ((3, "conventional"), (4, "bio")):

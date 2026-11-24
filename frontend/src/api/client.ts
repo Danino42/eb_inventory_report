@@ -1,6 +1,6 @@
 // In development, Vite forwards /api to FastAPI (see vite.config.ts).
 // For a hosted build, set VITE_API_URL to the backend address, e.g. https://api.example.com
-const BASE_URL = `${import.meta.env.VITE_API_URL ?? ''}/api`
+export const API_BASE = `${import.meta.env.VITE_API_URL ?? ''}/api`
 
 export class ApiError extends Error {
   readonly status: number
@@ -47,11 +47,12 @@ export async function request<T>(path: string, init?: RequestInit, options: Requ
   const timer = options.timeoutMs ? setTimeout(() => controller.abort(), options.timeoutMs) : undefined
   let response: Response
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(`${API_BASE}${path}`, {
       ...init,
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        // Uploads (FormData) get their content type from the browser
+        ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...(adminPin ? { 'X-Admin-Pin': adminPin } : {}),
         ...init?.headers,
       },

@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent, type SyntheticEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type SyntheticEvent } from 'react'
 import { ApiError } from '../../api/client'
-import { createFruit, deleteFruit, updateFruit } from '../../api/fruits'
-import { useAdminText } from '../../i18n/adminText'
+import { createFruit, deleteFruit, updateFruit, uploadFruitImage } from '../../api/fruits'
+import { FruitIcon } from '../../components/FruitIcon'
+import { ImageCropper } from '../../components/ImageCropper'
+import { fruitIconUrl } from '../../images/fruitIcons'
+import { formatDecimal, useAdminText } from '../../i18n/adminText'
 import {
   BOX_LABELS,
   BOX_TYPES,
@@ -28,8 +31,20 @@ const EMPTY_FRUIT: Fruit = {
   article_number: '',
   note: '',
   unit: 'kg',
+  crate_content: 1,
   variants: ['conventional', 'bio'],
   availability: {},
+}
+
+/** Larger files are rejected before the browser tries to read them */
+const MAX_PICTURE_BYTES = 25_000_000
+
+/** "Inhalt": a number from 0.1 with at most one decimal place ("13,5" or "13.5"); null if not */
+function parseCrateContent(text: string): number | null {
+  const value = text.trim().replace(',', '.')
+  if (!/^\d{1,4}(\.\d)?$/.test(value)) return null
+  const n = Number(value)
+  return n >= 0.1 && n <= 1000 ? n : null
 }
 
 const ALL_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
@@ -51,7 +66,7 @@ function toDevName(name: string): string {
 
 /** Strips derived fields (box_types, months) the API adds, so only stored fields are sent back */
 function toDraft(fruit: Fruit): Fruit {
-  const { dev_name, name_en, name_de, article_number, note, unit, variants, availability } = fruit
+  const { dev_name, name_en, name_de, article_number, note, unit, crate_content, variants, availability } = fruit
   return {
     dev_name,
     name_en,
@@ -59,6 +74,7 @@ function toDraft(fruit: Fruit): Fruit {
     article_number,
     note,
     unit,
+    crate_content: crate_content ?? 1,
     variants: [...variants],
     availability: structuredClone(availability),
   }
@@ -74,10 +90,44 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // "Inhalt" as typed (comma or point), checked on saving
+  const [crateText, setCrateText] = useState(() => formatDecimal(initial.crate_content, lang))
+  // Picture: the chosen file while it is being cropped, then the cropped PNG until saving
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [picture, setPicture] = useState<{ png: Blob; url: string } | null>(null)
+  const objectUrls = useRef<string[]>([])
 
   useEffect(() => {
     dialogRef.current?.showModal()
   }, [])
+
+  // Frees the pictures held in memory when the editor closes
+  useEffect(() => {
+    const urls = objectUrls.current
+    return () => urls.forEach((url) => URL.revokeObjectURL(url))
+  }, [])
+
+  function objectUrl(data: Blob): string {
+    const url = URL.createObjectURL(data)
+    objectUrls.current.push(url)
+    return url
+  }
+
+  function chooseFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // the same file can be chosen again
+    if (!file) return
+    if (file.size > MAX_PICTURE_BYTES) return setError(t.pictureTooLarge)
+    setError(null)
+    setCropSrc(objectUrl(file))
+  }
+
+  function setCrateContent(text: string) {
+    setCrateText(text)
+    const value = parseCrateContent(text)
+    if (value !== null) set('crate_content', value)
+  }
 
   function set<K extends keyof Fruit>(key: K, value: Fruit[K]) {
     setDraft((d) => ({ ...d, [key]: value }))
@@ -97,7 +147,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     setDraft((d) => ({ ...d, name_en: name, dev_name: devNameEdited ? d.dev_name : toDevName(name) }))
   }
 
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(initial)
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(initial) || picture !== null || cropSrc !== null
 
   /** Close via Cancel or Esc; asks first if something was changed */
   function requestClose() {
@@ -139,12 +189,12 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     })
   }
 
-  async function run(action: () => Promise<unknown>, message: string) {
+  /** action resolves with the confirmation to show, e.g. "Kiwi saved" */
+  async function run(action: () => Promise<string>) {
     setBusy(true)
     setError(null)
     try {
-      await action()
-      onSaved(message)
+      onSaved(await action())
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         setError(t.devNameTaken(draft.dev_name))
@@ -158,23 +208,33 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const crateContent = parseCrateContent(crateText)
+    if (crateContent === null) return setError(t.crateContentInvalid)
     // A box type without any month is the same as not offered
     const availability = Object.fromEntries(
       Object.entries(draft.availability).filter(([, a]) => a.months.length > 0),
     )
-    const payload = { ...draft, dev_name: draft.dev_name.trim(), availability }
+    const payload = { ...draft, crate_content: crateContent, dev_name: draft.dev_name.trim(), availability }
     const shownName = lang === 'de' ? payload.name_de : payload.name_en
-    run(
-      () => (isNew ? createFruit(payload) : updateFruit(fruit.dev_name, payload)),
-      isNew ? t.added(shownName) : t.saved(shownName),
-    )
+    run(async () => {
+      await (isNew ? createFruit(payload) : updateFruit(fruit.dev_name, payload))
+      if (picture) {
+        // The fruit is saved at this point; a failed picture is reported, not undone
+        try {
+          await uploadFruitImage(payload.dev_name, picture.png)
+        } catch (e) {
+          return t.savedWithoutPicture(shownName, e instanceof ApiError ? e.message : '')
+        }
+      }
+      return isNew ? t.added(shownName) : t.saved(shownName)
+    })
   }
 
   function handleDelete() {
     if (!fruit) return
     const shownName = lang === 'de' ? fruit.name_de : fruit.name_en
     if (!window.confirm(t.confirmDeleteFruit(shownName))) return
-    run(() => deleteFruit(fruit.dev_name), t.deleted(shownName))
+    run(() => deleteFruit(fruit.dev_name).then(() => t.deleted(shownName)))
   }
 
   return (
@@ -215,6 +275,19 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
             </select>
           </label>
           <label>
+            {t.crateContent}
+            <span className="editor__with-unit">
+              <input
+                value={crateText}
+                onChange={(e) => setCrateContent(e.target.value)}
+                inputMode="decimal"
+                autoComplete="off"
+                required
+              />
+              <span>{t.unitShort[draft.unit]}</span>
+            </span>
+          </label>
+          <label>
             {t.articleNumber}
             <input
               value={draft.article_number}
@@ -242,6 +315,33 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
             {t.note}
             <input value={draft.note} onChange={(e) => set('note', e.target.value)} />
           </label>
+          <div className="editor__wide editor__picture">
+            <span>{t.picture}</span>
+            <div className="editor__picture-row">
+              <FruitIcon devName={fruit?.dev_name ?? ''} size={64} src={picture?.url} />
+              {!cropSrc && (
+                <button type="button" className="btn" onClick={() => fileInput.current?.click()}>
+                  {picture || (fruit && fruitIconUrl(fruit.dev_name)) ? t.changePicture : t.choosePicture}
+                </button>
+              )}
+              <input ref={fileInput} type="file" accept="image/*,.heic,.heif" hidden onChange={chooseFile} />
+            </div>
+            {cropSrc && (
+              <ImageCropper
+                src={cropSrc}
+                labels={{ frame: t.picture, zoom: t.zoom, apply: t.applyCrop, cancel: t.cancel }}
+                onDone={(png) => {
+                  setPicture({ png, url: objectUrl(png) })
+                  setCropSrc(null)
+                }}
+                onCancel={() => setCropSrc(null)}
+                onUnreadable={() => {
+                  setCropSrc(null)
+                  setError(t.pictureUnreadable)
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <h3>{t.availability}</h3>

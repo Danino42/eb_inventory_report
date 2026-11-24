@@ -2,7 +2,7 @@
 // tablet, so the form also opens when the server cannot be reached.
 
 import { NetworkError, isTemporaryFailure } from '../../api/client'
-import { listFruits } from '../../api/fruits'
+import { listFruits, rememberPictures } from '../../api/fruits'
 import { listWorkers } from '../../api/workers'
 import { readJson, writeJson } from '../../lib/storage'
 import type { FruitWithDerived } from '../../types/fruit'
@@ -30,7 +30,11 @@ export async function loadFormData(): Promise<LoadedFormData> {
     return { fruits, workers, fromCache: false }
   } catch (e) {
     const cached = readJson<FormData | null>(KEY, null)
-    if (cached && isTemporaryFailure(e)) return { ...cached, fromCache: true }
+    if (cached && isTemporaryFailure(e)) {
+      // Uploaded pictures may still be in the browser cache
+      rememberPictures(cached.fruits)
+      return { ...cached, fromCache: true }
+    }
     throw e
   }
 }

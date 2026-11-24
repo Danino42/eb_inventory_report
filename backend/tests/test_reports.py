@@ -24,6 +24,7 @@ def outbox(tmp_path: Path):
         outbox_dir=tmp_path,
         mongodb_uri="",
         mail_settings_file=tmp_path / "mail_settings.json",
+        fruit_images_dir=tmp_path / "fruit_images",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     yield tmp_path
@@ -156,3 +157,30 @@ def test_invalid_reports_are_rejected(outbox: Path) -> None:
     assert client.post("/api/reports", json={**REPORT, "worker": ""}).status_code == 422
     bad_id = {**REPORT, "report_id": "../../etc/passwd"}
     assert client.post("/api/reports", json=bad_id).status_code == 422
+
+
+def test_pdf_uses_pictures_from_the_verwaltung() -> None:
+    from datetime import datetime
+
+    from PIL import Image
+
+    from app.models.report import InventoryReport
+    from app.services.report_documents import build_pdf
+
+    report = InventoryReport.model_validate(REPORT)
+    buffer = io.BytesIO()
+    Image.new("RGBA", (16, 16), "orange").save(buffer, format="PNG")
+    picture = buffer.getvalue()
+
+    def images(pdf: bytes) -> int:
+        return len(re.findall(rb"/Subtype\s*/Image", pdf))
+
+    icons_dir = get_settings().images_dir
+    plain = build_pdf(report, datetime.now(), icons_dir)
+    # The hand-typed Saftorangen got a picture in the Verwaltung
+    uploaded = build_pdf(report, datetime.now(), icons_dir, {"custom_1": picture}.get)
+    # One picture with transparency = two image objects in the PDF (picture + its mask)
+    assert images(uploaded) == images(plain) + 2
+    # A broken picture never stops the report
+    broken = build_pdf(report, datetime.now(), icons_dir, {"custom_1": b"broken"}.get)
+    assert images(broken) == images(plain)

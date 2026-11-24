@@ -1,7 +1,15 @@
 import { BOX_TYPES, type BoxType, type FruitWithDerived } from '../../types/fruit'
 
 /** "months" = the combined month bar (available in at least one box type) */
-export type SortKey = 'dev_name' | 'article_number' | 'name_de' | 'name_en' | 'unit' | 'months' | BoxType
+export type SortKey =
+  | 'dev_name'
+  | 'article_number'
+  | 'name_de'
+  | 'name_en'
+  | 'unit'
+  | 'crate_content'
+  | 'months'
+  | BoxType
 export type SortDirection = 'asc' | 'desc'
 export interface Sort {
   key: SortKey
@@ -21,6 +29,7 @@ function seasonStart(months: number[] | undefined): number {
 
 function compare(a: FruitWithDerived, b: FruitWithDerived, key: SortKey): number {
   if (key === 'months') return seasonStart(a.months) - seasonStart(b.months)
+  if (key === 'crate_content') return (a.crate_content ?? 1) - (b.crate_content ?? 1)
   if (isBox(key)) return seasonStart(a.availability[key]?.months) - seasonStart(b.availability[key]?.months)
   return collator.compare(a[key], b[key])
 }

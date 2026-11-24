@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo.errors import PyMongoError
 
-from app.api.deps import MailStore
+from app.api.deps import ImageStore, MailStore
 from app.core.config import Settings, get_settings
 from app.models.report import DeliveryInfo, InventoryReport, ReportResult
 from app.services.database import get_database
@@ -44,6 +44,7 @@ def send_report(
     settings: Annotated[Settings, Depends(get_settings)],
     log: Annotated[ReportLog, Depends(get_report_log)],
     mail_store: MailStore,
+    images: ImageStore,
 ) -> ReportResult:
     """Turns a filled-in form into an A4 PDF + CSV and emails both to the office.
 
@@ -55,7 +56,11 @@ def send_report(
 
     stem = file_stem(report)
     attachments = [
-        (f"{stem}.pdf", build_pdf(report, datetime.now(), settings.images_dir), "application/pdf"),
+        (
+            f"{stem}.pdf",
+            build_pdf(report, datetime.now(), settings.images_dir, images.get),
+            "application/pdf",
+        ),
         (f"{stem}.csv", build_csv(report), "text/csv"),
     ]
     subject = email_subject(report)

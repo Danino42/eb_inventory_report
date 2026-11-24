@@ -1,6 +1,6 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, computed_field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
 BoxType = Literal["standard", "spezial", "bio"]
 BOX_TYPES: tuple[BoxType, ...] = ("standard", "spezial", "bio")
@@ -16,6 +16,9 @@ Month = Annotated[int, Field(ge=1, le=12)]
 # Production method the fruit is stocked in (NF-6)
 Variant = Literal["conventional", "bio"]
 VARIANTS: tuple[Variant, ...] = ("conventional", "bio")
+
+# Until "Inhalt" could be set per fruit, a crate of any Hauptfrucht counted as 13.5 kg
+LEGACY_CRATE_KG = 13.5
 
 
 class BoxAvailability(BaseModel):
@@ -38,10 +41,32 @@ class Fruit(BaseModel):
     # Small extra info shown under the name, e.g. the apple varieties behind "apple_2"
     note: str = Field(default="", max_length=200)
     unit: Unit = "kg"
+    # "Inhalt": what one crate (Kiste) holds, in the fruit's unit; one decimal place. A tap on
+    # the fruit in the worker form adds this amount
+    crate_content: float = Field(default=1, ge=0.1, le=1000)
     # Which stock columns the worker form shows for this fruit
     variants: list[Variant] = Field(default=["conventional", "bio"], min_length=1)
     # Only box types the fruit is offered in are present
     availability: dict[BoxType, BoxAvailability] = {}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _crate_content_of_older_data(cls, data: Any) -> Any:
+        """Fruits saved before "Inhalt" existed: Hauptfrüchte in kg keep the 13.5 kg crate used
+        until then, everything else counts 1 (the default for new fruits)"""
+        if not isinstance(data, dict) or "crate_content" in data:
+            return data
+        boxes = (data.get("availability") or {}).values()
+        categories = [
+            b.get("category", "box") if isinstance(b, dict) else b.category for b in boxes
+        ]
+        hauptfrucht = data.get("unit", "kg") == "kg" and "box" in categories
+        return {**data, "crate_content": LEGACY_CRATE_KG if hauptfrucht else 1}
+
+    @field_validator("crate_content")
+    @classmethod
+    def _one_decimal(cls, value: float) -> float:
+        return round(value, 1)
 
     @field_validator("variants")
     @classmethod
@@ -79,3 +104,10 @@ class Fruit(BaseModel):
                 continue
             return True
         return False
+
+
+class FruitOut(Fruit):
+    """A fruit as the API returns it: plus the version of its uploaded picture, if there is one
+    (part of the picture's address, so a new picture shows at once)"""
+
+    image_version: str | None = None

@@ -4,6 +4,7 @@ from fastapi import Depends
 
 from app.core.config import Settings, get_settings
 from app.services.database import get_database
+from app.services.fruit_images import FileFruitImageStore, FruitImageStore, MongoFruitImageStore
 from app.services.mail_settings_store import (
     FileMailSettingsStore,
     MailSettingsStore,
@@ -21,3 +22,15 @@ def get_mail_settings_store(
 
 
 MailStore = Annotated[MailSettingsStore, Depends(get_mail_settings_store)]
+
+
+def get_fruit_image_store(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> FruitImageStore:
+    # MongoDB on the server (Render's disk is wiped on restarts), a local folder in development
+    if settings.mongodb_uri:
+        return MongoFruitImageStore(get_database()["fruit_images"])
+    return FileFruitImageStore(settings.fruit_images_dir)
+
+
+ImageStore = Annotated[FruitImageStore, Depends(get_fruit_image_store)]

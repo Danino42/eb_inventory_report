@@ -112,6 +112,18 @@ const de = {
   devNameHint: 'Nur Kleinbuchstaben, Zahlen und _ (z.B. apple_gala)',
   articleNumber: 'Artikelnummer',
   stockedAs: 'Geführt als',
+  crateContent: 'Inhalt',
+  crateContentInvalid: 'Inhalt: bitte eine Zahl ab 0,1 mit höchstens einer Dezimalstelle eingeben.',
+  unitShort: { kg: 'kg', pcs: 'Stk' },
+  picture: 'Bild',
+  choosePicture: 'Bild wählen',
+  changePicture: 'Bild ändern',
+  zoom: 'Zoom',
+  applyCrop: 'Übernehmen',
+  pictureUnreadable: 'Dieses Bild kann nicht gelesen werden. Bitte ein anderes Format wählen (z.B. JPG oder PNG).',
+  pictureTooLarge: 'Das Bild ist zu gross (max. 25 MB).',
+  savedWithoutPicture: (name: string, reason: string) =>
+    `${name} gespeichert, das Bild aber nicht${reason ? ` (${reason})` : ''}.`,
   note: 'Notiz',
   availability: 'Verfügbarkeit',
   allYear: 'Ganzes Jahr',
@@ -223,6 +235,17 @@ const en: AdminText = {
   devNameHint: 'Only small letters, numbers and _ (for example apple_gala)',
   articleNumber: 'Article number',
   stockedAs: 'Stocked as',
+  crateContent: 'Crate content',
+  crateContentInvalid: 'Crate content: please enter a number from 0.1 with at most one decimal place.',
+  unitShort: { kg: 'kg', pcs: 'pcs' },
+  picture: 'Picture',
+  choosePicture: 'Choose picture',
+  changePicture: 'Change picture',
+  zoom: 'Zoom',
+  applyCrop: 'Apply',
+  pictureUnreadable: 'This picture cannot be read. Please choose another format (e.g. JPG or PNG).',
+  pictureTooLarge: 'The picture is too large (max. 25 MB).',
+  savedWithoutPicture: (name, reason) => `${name} saved, but not the picture${reason ? ` (${reason})` : ''}.`,
   note: 'Note',
   availability: 'Availability',
   allYear: 'All year',
@@ -259,4 +282,10 @@ const TEXT: Record<Lang, AdminText> = { de, en }
 export function useAdminText(): { lang: Lang; t: AdminText } {
   const lang = useSyncExternalStore(subscribe, readLang)
   return { lang, t: TEXT[lang] }
+}
+
+/** Decimal number as the language writes it: 13,5 (German) / 13.5 (English) */
+export function formatDecimal(value: number, lang: Lang): string {
+  const text = String(Math.round(value * 10) / 10)
+  return lang === 'de' ? text.replace('.', ',') : text
 }

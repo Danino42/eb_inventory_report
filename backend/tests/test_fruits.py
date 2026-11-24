@@ -1,12 +1,16 @@
+import io
 import shutil
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 
+from app.api.deps import get_fruit_image_store
 from app.api.routes.fruits import get_fruit_store
 from app.core.config import get_settings
 from app.main import app
+from app.services.fruit_images import FileFruitImageStore, MongoFruitImageStore
 from app.services.fruit_store import FruitStore
 from app.services.mongo_store import MongoListStore
 
@@ -18,9 +22,12 @@ def client(request, tmp_path: Path, mongo_db):
     data_file = tmp_path / "fruits.json"
     shutil.copy(get_settings().fruits_file, data_file)
     store = FruitStore(data_file)
+    images = FileFruitImageStore(tmp_path / "fruit_images")
     if request.param == "mongodb":
         store = MongoListStore.seeded_from(mongo_db["fruits"], store)
+        images = MongoFruitImageStore(mongo_db["fruit_images"])
     app.dependency_overrides[get_fruit_store] = lambda: store
+    app.dependency_overrides[get_fruit_image_store] = lambda: images
     # Signed in to the Verwaltung: changes need the PIN
     yield TestClient(app, headers={"X-Admin-Pin": get_settings().admin_pin})
     app.dependency_overrides.clear()
@@ -137,3 +144,79 @@ def test_saved_file_keeps_compact_format(tmp_path: Path) -> None:
     text = (tmp_path / "fruits.json").read_text(encoding="utf-8")
     assert '"months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]' in text
     assert "box_types" not in text
+
+
+def test_crate_content(client: TestClient) -> None:
+    # "Inhalt": a Hauptfrucht crate is 13.5 kg (as before it could be set), an add-on counts 1
+    assert client.get("/api/fruits/banana").json()["crate_content"] == 13.5
+    assert client.get("/api/fruits/lemon").json()["crate_content"] == 1
+    # One decimal place; at least 0.1
+    created = client.post("/api/fruits", json={**NEW_FRUIT, "crate_content": 12.345}).json()
+    assert created["crate_content"] == 12.3
+    zero = {**NEW_FRUIT, "dev_name": "quince_2", "crate_content": 0}
+    assert client.post("/api/fruits", json=zero).status_code == 422
+
+
+def test_crate_content_of_fruits_saved_before_it_existed() -> None:
+    from app.models.fruit import Fruit
+
+    hauptfrucht = {"dev_name": "kiwi", "name_en": "Kiwi", "name_de": "Kiwi", "unit": "kg"}
+    hauptfrucht["availability"] = {"standard": {"category": "addon"}, "bio": {"category": "box"}}
+    assert Fruit.model_validate(hauptfrucht).crate_content == 13.5
+    # Add-on in every box (Trockenfrüchte, even in kg) or counted in pieces: 1
+    dried = {**hauptfrucht, "availability": {"bio": {"category": "addon"}}}
+    assert Fruit.model_validate(dried).crate_content == 1
+    assert Fruit.model_validate({**hauptfrucht, "unit": "pcs"}).crate_content == 1
+
+
+def png(color: str = "red", size: int = 8) -> bytes:
+    buffer = io.BytesIO()
+    Image.new("RGBA", (size, size), color).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def upload(client: TestClient, dev_name: str, data: bytes, **kwargs):
+    files = {"image": (f"{dev_name}.png", data, "image/png")}
+    return client.put(f"/api/fruits/{dev_name}/image", files=files, **kwargs)
+
+
+def test_uploaded_picture(client: TestClient) -> None:
+    assert client.get("/api/fruits/banana").json()["image_version"] is None
+    response = upload(client, "banana", png())
+    assert response.status_code == 200
+    version = response.json()["image_version"]
+
+    listed = {f["dev_name"]: f for f in client.get("/api/fruits").json()}
+    assert listed["banana"]["image_version"] == version
+    assert listed["kiwi"]["image_version"] is None
+    picture = client.get(f"/api/fruits/banana/image?v={version}")
+    assert picture.headers["content-type"] == "image/png"
+    assert picture.content == png()
+    assert "immutable" in picture.headers["cache-control"]
+
+    # A new picture gets a new version, so the tablet shows it at once
+    assert upload(client, "banana", png("green")).json()["image_version"] != version
+
+
+def test_picture_moves_with_a_renamed_fruit_and_goes_with_a_deleted_one(client: TestClient) -> None:
+    client.post("/api/fruits", json=NEW_FRUIT)
+    upload(client, "quince", png())
+    renamed = {**NEW_FRUIT, "dev_name": "quince_bio"}
+    client.put("/api/fruits/quince", json=renamed)
+    assert client.get("/api/fruits/quince/image").status_code == 404
+    assert client.get("/api/fruits/quince_bio/image").content == png()
+
+    client.delete("/api/fruits/quince_bio")
+    client.post("/api/fruits", json=renamed)  # same name again: no old picture comes back
+    assert client.get("/api/fruits/quince_bio/image").status_code == 404
+
+
+def test_invalid_pictures_are_rejected(client: TestClient) -> None:
+    assert upload(client, "banana", b"not a picture").status_code == 422
+    jpeg = io.BytesIO()
+    Image.new("RGB", (8, 8), "red").save(jpeg, format="JPEG")
+    assert upload(client, "banana", jpeg.getvalue()).status_code == 422  # the app sends PNG
+    assert upload(client, "banana", png(size=2000)).status_code == 422  # too large
+    assert upload(client, "no_such_fruit", png()).status_code == 404
+    assert upload(TestClient(app), "banana", png()).status_code == 401  # needs the PIN
+    assert client.get("/api/fruits/banana").json()["image_version"] is None

@@ -1,0 +1,51 @@
+/* Small cropping tool for fruit pictures (Verwaltung) */
+.cropper {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.cropper__frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  /* Checkerboard behind transparent pictures */
+  background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--bg) 0% 50%) 50% / 16px 16px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cropper__frame:active {
+  cursor: grabbing;
+}
+
+.cropper__frame img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  pointer-events: none;
+}
+
+.cropper__zoom {
+  display: grid;
+  gap: 3px;
+  width: 240px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.cropper__zoom input {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--text-strong);
+}
+
+.cropper__actions {
+  display: flex;
+  gap: 8px;
+}

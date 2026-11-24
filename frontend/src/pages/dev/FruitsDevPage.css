@@ -279,6 +279,38 @@
   grid-column: 1 / -1;
 }
 
+/* "Inhalt" with its unit after the field */
+.editor__with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.editor__with-unit input {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor__picture {
+  display: grid;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.editor__picture-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+}
+
+.editor__picture-row .fruit-icon {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
 .editor__variants {
   display: grid;
   gap: 3px;
@@ -365,4 +397,10 @@
   .month-toggles {
     grid-template-columns: repeat(12, 1fr);
   }
+}
+
+/* Numbers (e.g. "Inhalt") line up on the right */
+.fruit-table__num {
+  text-align: right;
+  white-space: nowrap;
 }

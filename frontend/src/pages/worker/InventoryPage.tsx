@@ -61,6 +61,7 @@ function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived
     article_number: '',
     note: '',
     unit,
+    crate_content: 1,
     variants: ['conventional', 'bio'],
     availability: {},
     box_types: [],

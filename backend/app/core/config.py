@@ -31,6 +31,8 @@ class Settings(BaseSettings):
 
     # Fruit catalogue (seasonal calendar), edited through /api/fruits
     fruits_file: Path = BACKEND_DIR / "data" / "fruits.json"
+    # Pictures uploaded in the Verwaltung; in MongoDB on the server, here locally (not in git)
+    fruit_images_dir: Path = BACKEND_DIR / "data" / "fruit_images"
 
     # Regularly ordered articles (supplier order list); mock data until the Access import exists
     order_articles_file: Path = BACKEND_DIR / "data" / "order_articles.json"

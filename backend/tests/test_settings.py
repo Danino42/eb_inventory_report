@@ -32,6 +32,7 @@ def config(tmp_path: Path):
         mongodb_uri="",
         outbox_dir=tmp_path / "outbox",
         mail_settings_file=tmp_path / "mail_settings.json",
+        fruit_images_dir=tmp_path / "fruit_images",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     yield settings

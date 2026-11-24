@@ -34,17 +34,14 @@ export function addAmount(text: string, delta: number): string {
 
 export const UNIT_SHORT: Record<Unit, string> = { kg: 'kg', pcs: 'Stk' }
 
-/** For now a crate (Kiste) of any kg fruit counts as 13.5 kg; later each fruit gets its own
-    value in the catalogue */
-export const CRATE_KG = 13.5
-
-/** kg in one crate of this fruit, or null if it is not counted in crates (Stk) */
-export function crateKg(fruit: { unit: Unit }): number | null {
-  return fruit.unit === 'kg' ? CRATE_KG : null
+/** What one crate of the fruit holds ("Inhalt" in the Verwaltung); 1 for fruits typed in by
+    hand or saved on the tablet before the field existed */
+export function crateContent(fruit: { crate_content?: number }): number {
+  return fruit.crate_content && fruit.crate_content > 0 ? fruit.crate_content : 1
 }
 
-/** The kg as crates: "1 Kiste", "2 Kisten", "1,9 Kisten" (after fine adjustments) */
-export function formatCrates(kg: number, perCrate: number): string {
-  const crates = Math.round((kg / perCrate) * 10) / 10
+/** The amount as crates: "1 Kiste", "2 Kisten", "1,9 Kisten" (after fine adjustments) */
+export function formatCrates(amount: number, perCrate: number): string {
+  const crates = Math.round((amount / perCrate) * 10) / 10
   return `${formatAmount(crates)} ${crates === 1 ? 'Kiste' : 'Kisten'}`
 }

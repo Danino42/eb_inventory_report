@@ -7,7 +7,7 @@ import { LanguageToggle } from '../../components/LanguageToggle'
 import { FruitIcon } from '../../components/FruitIcon'
 import { MonthInitials, MonthStrip } from '../../components/MonthStrip'
 import { ThemeToggle } from '../../components/ThemeToggle'
-import { useAdminText, type AdminText, type Lang } from '../../i18n/adminText'
+import { formatDecimal, useAdminText, type AdminText, type Lang } from '../../i18n/adminText'
 import {
   BOX_LABELS,
   BOX_TYPES,
@@ -54,6 +54,7 @@ function columnsFor(view: View, t: AdminText, lang: Lang): { key: SortKey; label
     { key: 'name_de', label: t.colGerman },
     { key: 'name_en', label: t.colEnglish },
     { key: 'unit', label: t.unit },
+    { key: 'crate_content', label: t.crateContent },
     ...BOX_TYPES.map((b) => ({ key: b as SortKey, label: BOX_LABELS[b] })),
   ]
 }
@@ -315,6 +316,9 @@ export function FruitsDevPage() {
                       <td>
                         {f.unit}
                         <small className="note">{f.variants.map((v) => t.variants[v]).join(' · ')}</small>
+                      </td>
+                      <td className="fruit-table__num">
+                        {formatDecimal(f.crate_content ?? 1, lang)} {t.unitShort[f.unit]}
                       </td>
                       {BOX_TYPES.map((b) => {
                         const a = f.availability[b]

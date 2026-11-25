@@ -18,8 +18,9 @@ export interface FormLine {
 }
 
 /** An add-on in every box it is in (e.g. Zitrone, Trockenfrüchte; Kiwi is a box fruit in Bio).
-    Fruits typed in by hand count as add-ons when they are counted in pieces (Stk). */
+    Fruits typed in by hand are always add-ons; catalogue fruits in no box when counted in Stk. */
 function isAddon(fruit: FruitWithDerived): boolean {
+  if (fruit.dev_name.startsWith('custom_')) return true
   const boxes = Object.values(fruit.availability).filter((b) => b !== undefined)
   return boxes.length > 0 ? boxes.every((b) => b.category === 'addon') : fruit.unit === 'pcs'
 }

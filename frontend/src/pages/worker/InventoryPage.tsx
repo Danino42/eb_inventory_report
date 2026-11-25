@@ -57,7 +57,7 @@ function initialState(): { start: Draft; stale: Draft | null } {
 /** After sending: emailed, saved on the server (no email set up), or waiting on the tablet */
 type SentState = { kind: 'sent' | 'saved'; result: ReportResult; at: Date } | { kind: 'queued'; at: Date }
 
-/** A fruit typed in by hand (not in the catalogue); counted in both Konventionell and Bio */
+/** A fruit typed in by hand (not in the catalogue): in the Add-ons, counted in Konventionell and Bio */
 function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived {
   return {
     dev_name: `custom_${id}`,

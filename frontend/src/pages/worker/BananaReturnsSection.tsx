@@ -28,7 +28,6 @@ export function BananaReturnsSection({ value, perCrate, onChange }: Props) {
             <div key={v} className="banana-returns__field">
               {/* Like the fruits above: each tap adds one crate */}
               <button type="button" className="stock__fruit banana-returns__fruit" onClick={() => add(perCrate)}>
-                <FruitIcon devName="banana" size={44} />
                 <span className="stock__label">
                   <span className="stock__name">{VARIANT_LABELS[v]}</span>
                   {perCrate !== 1 && amount ? (

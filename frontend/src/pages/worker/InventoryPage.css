@@ -399,9 +399,10 @@
   border-top: 1px solid var(--border);
 }
 
-/* Konventionell / Bio: a fruit button like in the list above, up to the amount field */
+/* Konventionell / Bio: a fruit button like in the list above (without icon), up to the amount */
 .banana-returns__fruit {
   flex: 1;
+  padding-left: 16px;
 }
 
 @media (min-width: 840px) {

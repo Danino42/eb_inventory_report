@@ -5,6 +5,7 @@ import { AdminGate } from './pages/dev/AdminGate'
 import { FruitsDevPage } from './pages/dev/FruitsDevPage'
 import { OrderArticlesPage } from './pages/dev/OrderArticlesPage'
 import { SettingsPage } from './pages/dev/SettingsPage'
+import { WorkersPage } from './pages/dev/WorkersPage'
 import { HomePage } from './pages/HomePage'
 import { InventoryPage } from './pages/worker/InventoryPage'
 
@@ -20,6 +21,7 @@ function App() {
       <Route path="/verwaltung" element={<AdminGate />}>
         <Route index element={<FruitsDevPage />} />
         <Route path="bestellartikel" element={<OrderArticlesPage />} />
+        <Route path="mitarbeiter" element={<WorkersPage />} />
         <Route path="einstellungen" element={<SettingsPage />} />
       </Route>
       {/* Old address of the catalogue page */}

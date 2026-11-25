@@ -1,0 +1,58 @@
+/* Verwaltung: names for the worker form's name picker */
+.workers {
+  display: grid;
+  gap: 12px;
+  max-width: 600px;
+}
+
+.workers__add,
+.workers__edit {
+  display: flex;
+  gap: 8px;
+}
+
+.workers__edit {
+  flex: 1;
+  min-width: 0;
+}
+
+.workers__add input,
+.workers__edit input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  font-size: 1rem;
+}
+
+.workers__add .btn,
+.workers__row .btn {
+  min-height: 44px;
+}
+
+.workers__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.workers__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.workers__row:last-child {
+  border-bottom: none;
+}
+
+.workers__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}

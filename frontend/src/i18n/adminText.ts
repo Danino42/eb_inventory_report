@@ -61,6 +61,17 @@ const de = {
   checkingPin: 'PIN wird geprüft…',
   eraseDigit: 'Ziffer löschen',
 
+  // Staff (names for the worker form's name picker)
+  tabWorkers: 'Mitarbeiter',
+  workersTitle: 'Mitarbeiter',
+  namesCount: (n: number) => `${n} Namen`,
+  newName: 'Neuer Name',
+  add: 'Hinzufügen',
+  rename: 'Umbenennen',
+  nameTaken: (name: string) => `«${name}» gibt es schon.`,
+  nameInvalid: 'Bitte einen Namen ohne / eingeben (höchstens 60 Zeichen).',
+  confirmRemoveWorker: (name: string) => `${name} aus der Namensliste entfernen?`,
+
   // Settings
   tabSettings: 'Einstellungen',
   settingsTitle: 'Einstellungen',
@@ -184,6 +195,16 @@ const en: AdminText = {
   wrongPin: 'Wrong PIN',
   checkingPin: 'Checking PIN…',
   eraseDigit: 'Delete digit',
+
+  tabWorkers: 'Staff',
+  workersTitle: 'Staff',
+  namesCount: (n) => `${n} names`,
+  newName: 'New name',
+  add: 'Add',
+  rename: 'Rename',
+  nameTaken: (name) => `"${name}" already exists.`,
+  nameInvalid: 'Please enter a name without / (at most 60 characters).',
+  confirmRemoveWorker: (name) => `Remove ${name} from the name list?`,
 
   tabSettings: 'Settings',
   settingsTitle: 'Settings',

@@ -237,6 +237,8 @@ button:focus-visible {
 /* Tabs of the Verwaltung area (Früchtekatalog | Bestellartikel) */
 .admin-tabs {
   display: flex;
+  /* Four tabs don't fit side by side on a phone */
+  flex-wrap: wrap;
   gap: 4px;
   border-bottom: 1px solid var(--border);
 }

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router'
 import { ApiError, isTemporaryFailure } from '../../api/client'
 import { sendReport, type InventoryReport, type ReportResult } from '../../api/reports'
 import { FruitIcon } from '../../components/FruitIcon'
+import trashIcon from '../../images/icons/trash.png'
+import userIcon from '../../images/icons/user.png'
 import { enqueueReport } from '../../lib/reportQueue'
 import { newId } from '../../lib/storage'
 import type { FruitWithDerived, Unit, Variant } from '../../types/fruit'
@@ -116,6 +118,9 @@ export function InventoryPage() {
   const [pickNameToSend, setPickNameToSend] = useState(false)
   // Set after sending: shows the confirmation instead of the form
   const [sent, setSent] = useState<SentState | null>(null)
+  // The header stays at the top; the part titles (Konventionell, Bio, Add-ons) stick below it
+  const pageRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     loadFormData()
@@ -145,6 +150,18 @@ export function InventoryPage() {
       hqNotes,
     })
   }, [staleDraft, sent, reportId, reportDate, name, amounts, added, customFruits, bananaReturns, ifco, hqNotes])
+
+  // Header height as --sticky-header (it wraps onto two lines on phones)
+  useEffect(() => {
+    const page = pageRef.current
+    const header = headerRef.current
+    if (!page || !header) return
+    const observer = new ResizeObserver(() =>
+      page.style.setProperty('--sticky-header', `${header.offsetHeight}px`),
+    )
+    observer.observe(header)
+    return () => observer.disconnect()
+  }, [staleDraft, sent])
 
   /** Puts a draft (restored or new) into the form */
   function applyDraft(d: Draft) {
@@ -366,11 +383,11 @@ export function InventoryPage() {
   }
 
   return (
-    <div className="inventory">
+    <div className="inventory" ref={pageRef}>
       <button type="button" className="home-link" onClick={() => navigate('/')}>
         ‹ Start
       </button>
-      <header className="inventory__header">
+      <header className="inventory__header" ref={headerRef}>
         <div className="inventory__title">
           <h1>Warenbestand</h1>
           {/* The real date field lies invisibly over the date text, so a tap lands on the field
@@ -393,13 +410,20 @@ export function InventoryPage() {
             />
           </label>
         </div>
-        <button
-          type="button"
-          className={`inventory__name${name ? '' : ' is-empty'}`}
-          onClick={() => setDialog('name')}
-        >
-          {name || 'Name wählen'}
-        </button>
+        <div className="inventory__actions">
+          <button
+            type="button"
+            className={`inventory__action inventory__name${name ? '' : ' is-empty'}`}
+            onClick={() => setDialog('name')}
+          >
+            <img src={userIcon} alt="" className="inventory__icon inventory__icon--user" />
+            {name || 'Name wählen'}
+          </button>
+          <button type="button" className="inventory__action" onClick={clearFields} disabled={!hasEntries}>
+            <img src={trashIcon} alt="" className="inventory__icon" />
+            Leeren
+          </button>
+        </div>
       </header>
 
       {!loading && !error && (
@@ -411,9 +435,6 @@ export function InventoryPage() {
             <span style={{ width: `${fieldCount ? (filledCount / fieldCount) * 100 : 0}%` }} />
           </span>
           {offline && <span className="inventory__offline">Offline</span>}
-          <button type="button" className="btn inventory__clear" onClick={clearFields} disabled={!hasEntries}>
-            Leeren
-          </button>
         </p>
       )}
 

@@ -8,12 +8,25 @@
   gap: 16px;
 }
 
+/* Title, date, name and "Leeren" stay at the top while scrolling */
 .inventory__header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
+  margin: 0 -16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.inventory__actions {
+  display: flex;
+  gap: 8px;
 }
 
 .inventory__title {
@@ -58,16 +71,45 @@
   border-radius: var(--radius);
 }
 
-.inventory__name {
+/* "Name wählen" and "Leeren": the same big buttons, each with its icon */
+.inventory__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   min-height: 52px;
-  min-width: 180px;
-  padding: 8px 20px;
+  padding: 8px 18px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--bg);
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.inventory__action:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.inventory__action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.inventory__name {
+  min-width: 180px;
+}
+
+.inventory__icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* The person icon is black: light on the dark theme */
+:root[data-theme='dark'] .inventory__icon--user {
+  filter: invert(1);
 }
 
 .inventory__name.is-empty {
@@ -117,7 +159,8 @@
 /* Part title. Stays on top while scrolling: Banane is in Konv. and Bio, the title says which */
 .stock__title {
   position: sticky;
-  top: 0;
+  /* Right below the sticky page header (its height is measured in InventoryPage.tsx) */
+  top: var(--sticky-header, 0px);
   z-index: 1;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
@@ -317,26 +360,24 @@
   color: var(--on-strong);
 }
 
-/* Bananen Retouren: Konventionell and Bio side by side */
+/* Bananen Retouren: Konventionell and Bio side by side where there is room, otherwise below
+   each other with the amounts lined up */
 .banana-returns {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(342px, max-content));
   gap: 12px 40px;
   padding: 8px 0 4px;
   border-top: 1px solid var(--border);
 }
 
 .banana-returns__field {
-  display: flex;
+  display: grid;
+  grid-template-columns: 112px auto;
   align-items: center;
   gap: 14px;
 }
 
 /* "Leeren" at the end of the progress line */
-.inventory__clear {
-  flex: none;
-}
-
 .hq-notes {
   width: 100%;
   min-height: 96px;
@@ -828,6 +869,16 @@
 
 /* Phones: the amount goes under the fruit, both use the full width */
 @media (max-width: 520px) {
+  /* Name and "Leeren" share the second header line */
+  .inventory__actions {
+    width: 100%;
+  }
+
+  .inventory__name {
+    flex: 1;
+    min-width: 0;
+  }
+
   .stock__row,
   .stock__row--new {
     grid-template-columns: minmax(0, 1fr);
@@ -865,10 +916,13 @@
   }
 
   /* Bananen Retouren: label above each field, both full width */
+  .banana-returns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .banana-returns__field {
-    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 4px;
-    width: 100%;
   }
 
   /* Review: the two buttons share the width instead of pushing the pop-up wider */

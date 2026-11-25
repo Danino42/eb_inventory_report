@@ -317,6 +317,26 @@
   color: var(--on-strong);
 }
 
+/* Bananen Retouren: Konventionell and Bio side by side */
+.banana-returns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  padding: 8px 0 4px;
+  border-top: 1px solid var(--border);
+}
+
+.banana-returns__field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* "Leeren" at the end of the progress line */
+.inventory__clear {
+  flex: none;
+}
+
 .hq-notes {
   width: 100%;
   min-height: 96px;
@@ -842,6 +862,13 @@
 
   .new-fruit .btn {
     flex: 1;
+  }
+
+  /* Bananen Retouren: label above each field, both full width */
+  .banana-returns__field {
+    display: grid;
+    gap: 4px;
+    width: 100%;
   }
 
   /* Review: the two buttons share the width instead of pushing the pop-up wider */

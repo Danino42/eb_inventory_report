@@ -7,6 +7,8 @@ import { enqueueReport } from '../../lib/reportQueue'
 import { newId } from '../../lib/storage'
 import type { FruitWithDerived, Unit, Variant } from '../../types/fruit'
 import { AddFruitDialog } from './AddFruitDialog'
+import { EMPTY_BANANA_RETURNS, type BananaReturns } from './bananaReturns'
+import { BananaReturnsSection } from './BananaReturnsSection'
 import { EMPTY_IFCO, type IfcoState } from './ifco'
 import { IfcoSection } from './IfcoSection'
 import { NamePicker } from './NamePicker'
@@ -33,6 +35,7 @@ function emptyDraft(): Draft {
     added: [],
     customFruits: [],
     nextCustomId: 1,
+    bananaReturns: EMPTY_BANANA_RETURNS,
     ifco: EMPTY_IFCO,
     hqNotes: '',
   }
@@ -69,6 +72,14 @@ function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived
   }
 }
 
+const collator = new Intl.Collator('de', { numeric: true, sensitivity: 'base' })
+
+/** By article number (1010 before 1020 before 2010); fruits without one after, by name */
+function byArticleNumber(a: FruitWithDerived, b: FruitWithDerived): number {
+  if (!a.article_number !== !b.article_number) return a.article_number ? -1 : 1
+  return collator.compare(a.article_number, b.article_number) || collator.compare(a.name_de, b.name_de)
+}
+
 /** Typed amounts per fruit and variant, e.g. { apple_gala: { conventional: "12", bio: "10" } } */
 type Amounts = Record<string, Partial<Record<Variant, string>>>
 
@@ -93,6 +104,9 @@ export function InventoryPage() {
   // Free-text fruits that are not in the catalogue at all
   const [customFruits, setCustomFruits] = useState<FruitWithDerived[]>(initial.start.customFruits)
   const nextCustomId = useRef(initial.start.nextCustomId)
+  const [bananaReturns, setBananaReturns] = useState<BananaReturns>(
+    initial.start.bananaReturns ?? EMPTY_BANANA_RETURNS,
+  )
   const [ifco, setIfco] = useState<IfcoState>(initial.start.ifco)
   const [hqNotes, setHqNotes] = useState(initial.start.hqNotes)
   const [dialog, setDialog] = useState<'none' | 'name' | 'add' | 'review'>('none')
@@ -126,10 +140,11 @@ export function InventoryPage() {
       added,
       customFruits,
       nextCustomId: nextCustomId.current,
+      bananaReturns,
       ifco,
       hqNotes,
     })
-  }, [staleDraft, sent, reportId, reportDate, name, amounts, added, customFruits, ifco, hqNotes])
+  }, [staleDraft, sent, reportId, reportDate, name, amounts, added, customFruits, bananaReturns, ifco, hqNotes])
 
   /** Puts a draft (restored or new) into the form */
   function applyDraft(d: Draft) {
@@ -140,26 +155,43 @@ export function InventoryPage() {
     setAdded(d.added)
     setCustomFruits(d.customFruits)
     nextCustomId.current = d.nextCustomId
+    setBananaReturns(d.bananaReturns ?? EMPTY_BANANA_RETURNS)
     setIfco(d.ifco)
     setHqNotes(d.hqNotes)
+  }
+
+  /** "Leeren": empties every field; name, date and the added fruits stay */
+  function clearFields() {
+    if (!window.confirm('Bist du sicher, dass du alle Felder leeren willst?')) return
+    setAmounts({})
+    setBananaReturns(EMPTY_BANANA_RETURNS)
+    setIfco(EMPTY_IFCO)
+    setHqNotes('')
   }
 
   const month = fromIsoDate(reportDate).getMonth() + 1
   // The IFCO check is only done in the Monday report (Sunday→Monday night shift)
   const isMonday = fromIsoDate(reportDate).getDay() === 1
-  // This month's fruits in catalogue order, then the ones added by hand
+  // This month's fruits and the ones added from the list, by article number; typed-in ones last
   const shown = useMemo(() => {
     const seasonal = allFruits.filter((f) => f.months.includes(month))
     const extra = added
       .map((devName) => allFruits.find((f) => f.dev_name === devName))
       .filter((f): f is FruitWithDerived => !!f && !seasonal.includes(f))
-    return [...seasonal, ...extra, ...customFruits]
+    return [...[...seasonal, ...extra].sort(byArticleNumber), ...customFruits]
   }, [allFruits, added, customFruits, month])
   const notShown = allFruits.filter((f) => !shown.includes(f))
   // The amount fields in the form's three parts (Konventionell, Bio, Add-ons)
   const lines = useMemo(() => groupLines(shown), [shown])
   const isRemovable = (devName: string) =>
     added.includes(devName) || customFruits.some((f) => f.dev_name === devName)
+
+  // Anything typed or chosen that "Leeren" would empty
+  const hasEntries =
+    Object.values(amounts).some((byVariant) => Object.values(byVariant).some(Boolean)) ||
+    Object.values(bananaReturns).some(Boolean) ||
+    JSON.stringify(ifco) !== JSON.stringify(EMPTY_IFCO) ||
+    hqNotes.trim() !== ''
 
   const fieldCount = shown.reduce((n, f) => n + f.variants.length, 0)
   const filledCount = shown.reduce(
@@ -207,6 +239,10 @@ export function InventoryPage() {
           custom: f.dev_name.startsWith('custom_'),
         })),
       ),
+      banana_returns: {
+        conventional: parseAmount(bananaReturns.conventional),
+        bio: parseAmount(bananaReturns.bio),
+      },
       ifco: isMonday
         ? {
             returned: parseAmount(ifco.returned),
@@ -375,6 +411,9 @@ export function InventoryPage() {
             <span style={{ width: `${fieldCount ? (filledCount / fieldCount) * 100 : 0}%` }} />
           </span>
           {offline && <span className="inventory__offline">Offline</span>}
+          <button type="button" className="btn inventory__clear" onClick={clearFields} disabled={!hasEntries}>
+            Leeren
+          </button>
         </p>
       )}
 
@@ -421,6 +460,8 @@ export function InventoryPage() {
           </button>
         </section>
       )}
+
+      {!loading && !error && <BananaReturnsSection value={bananaReturns} onChange={setBananaReturns} />}
 
       {!loading && !error && isMonday && <IfcoSection value={ifco} onChange={setIfco} />}
 

@@ -69,6 +69,7 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
 
   const { weekday, date } = formatReportDate(report.report_date)
   const empty = report.lines.filter((l) => l.quantity === null).length
+  const returns = report.banana_returns
   const ifco = report.ifco
   const reorder = ifco
     ? [ifco.reorder_small && 'klein', ifco.reorder_large && 'gross'].filter(Boolean).join(' und ')
@@ -138,6 +139,19 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
           ))}
         </div>
 
+        {returns && (
+          <p className="review__line">
+            <strong className="review__label">
+              <FruitIcon devName="banana" size={26} />
+              Bananen Retouren
+            </strong>
+            {VARIANTS.map((v) => (
+              <span key={v} className={returns[v] === null ? 'is-empty' : ''}>
+                {VARIANT_SHORT[v]} {returns[v] === null ? 'leer' : `${formatAmount(returns[v])} kg`}
+              </span>
+            ))}
+          </p>
+        )}
         {ifco && (
           <p className="review__line">
             <strong className="review__label">

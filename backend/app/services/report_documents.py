@@ -164,6 +164,21 @@ def build_pdf(
         _fruit_table(report, base, images_dir / "fruit_icons", uploaded),
     ]
 
+    if report.banana_returns is not None:
+        banana = icon(images_dir / "fruit_icons" / "banana.png", 8 * mm, align="LEFT")
+        story += [
+            Spacer(1, 5 * mm),
+            Table(
+                [[banana, Paragraph("Bananen Retouren", heading)]],
+                colWidths=[10 * mm, CONTENT_WIDTH - 10 * mm],
+                style=TableStyle(
+                    [("PADDING", (0, 0), (-1, -1), 0), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]
+                ),
+            ),
+            Spacer(1, 1.5 * mm),
+            _banana_returns_table(report),
+        ]
+
     if report.ifco is not None:
         story += [
             Spacer(1, 5 * mm),
@@ -253,6 +268,35 @@ def _fruit_table(
     )
 
 
+def _banana_returns_table(report: InventoryReport) -> Table:
+    """One row: Konventionell | amount | Bio | amount (empty fields in soft orange)"""
+    returns = report.banana_returns
+    assert returns is not None
+    row: list[str] = []
+    style = [
+        ("FONTSIZE", (0, 0), (-1, -1), 9.5),
+        ("GRID", (0, 0), (-1, -1), 0.5, GRID),
+        ("BACKGROUND", (0, 0), (0, 0), HEADER_FILL),
+        ("BACKGROUND", (2, 0), (2, 0), HEADER_FILL),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]
+    for c, (label, value) in enumerate(
+        (("Konventionell", returns.conventional), ("Bio", returns.bio))
+    ):
+        row.append(label)
+        if value is None:
+            row.append("leer")
+            col = 2 * c + 1
+            style += [
+                ("BACKGROUND", (col, 0), (col, 0), EMPTY_FILL),
+                ("TEXTCOLOR", (col, 0), (col, 0), EMPTY_TEXT),
+            ]
+        else:
+            row.append(f"{format_quantity(value)} kg")
+    return Table([row], colWidths=col_widths(30, 59, 30, 59), style=TableStyle(style))
+
+
 def _ifco_table(report: InventoryReport) -> Table:
     ifco = report.ifco
     assert ifco is not None
@@ -329,6 +373,25 @@ def build_csv(report: InventoryReport) -> bytes:
                 "1" if line.custom else "0",
             ]
         )
+    if report.banana_returns is not None:
+        for variant, value in (
+            ("conventional", report.banana_returns.conventional),
+            ("bio", report.banana_returns.bio),
+        ):
+            writer.writerow(
+                [
+                    report.report_date.isoformat(),
+                    weekday,
+                    report.worker,
+                    "",
+                    "banana_returns",
+                    "Bananen Retouren",
+                    variant,
+                    "" if value is None else f"{value:g}",
+                    "kg",
+                    "0",
+                ]
+            )
     return out.getvalue().encode("utf-8-sig")
 
 
@@ -346,6 +409,15 @@ def email_body(report: InventoryReport) -> str:
         f"- {len(report.lines) - empty} von {len(report.lines)} Feldern ausgefüllt"
         + (f" ({empty} leer, im PDF orange markiert)" if empty else ""),
     ]
+    if report.banana_returns is not None:
+        returns = report.banana_returns
+        lines.append(
+            "- Bananen Retouren: "
+            + ", ".join(
+                f"{label} " + ("leer" if value is None else f"{format_quantity(value)} kg")
+                for label, value in (("Konventionell", returns.conventional), ("Bio", returns.bio))
+            )
+        )
     if report.ifco is not None:
         ifco = report.ifco
         reorder = [

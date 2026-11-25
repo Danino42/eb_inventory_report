@@ -184,3 +184,30 @@ def test_pdf_uses_pictures_from_the_verwaltung() -> None:
     # A broken picture never stops the report
     broken = build_pdf(report, datetime.now(), icons_dir, {"custom_1": b"broken"}.get)
     assert images(broken) == images(plain)
+
+
+def test_banana_returns_in_csv_email_and_pdf(outbox: Path) -> None:
+    report = {**REPORT, "banana_returns": {"conventional": 3.5, "bio": None}}
+    assert client.post("/api/reports", json=report).status_code == 201
+
+    raw = next(outbox.glob("*.csv")).read_bytes()
+    rows = list(csv.DictReader(io.StringIO(raw.decode("utf-8-sig")), delimiter=";"))
+    returns = [r for r in rows if r["dev_name"] == "banana_returns"]
+    assert [(r["variant"], r["quantity"], r["unit"]) for r in returns] == [
+        ("conventional", "3.5", "kg"),
+        ("bio", "", "kg"),
+    ]
+
+    eml = next(outbox.glob("*.eml")).read_bytes()
+    body = message_from_bytes(eml, policy=policy.default).get_body(preferencelist=("plain",))
+    assert "- Bananen Retouren: Konventionell 3,5 kg, Bio leer" in body.get_content()
+    assert pdf_page_count(next(outbox.glob("*.pdf")).read_bytes()) == 1
+
+
+def test_banana_returns_are_checked_and_optional(outbox: Path) -> None:
+    negative = {**REPORT, "banana_returns": {"conventional": -1, "bio": 2}}
+    assert client.post("/api/reports", json=negative).status_code == 422
+    # Reports from tablets with an older app version (no such section) still go through
+    assert client.post("/api/reports", json=REPORT).status_code == 201
+    raw = next(outbox.glob("*.csv")).read_bytes().decode("utf-8-sig")
+    assert "banana_returns" not in raw

@@ -3,6 +3,7 @@
 
 import { readJson, removeKey, writeJson } from '../../lib/storage'
 import type { FruitWithDerived, Variant } from '../../types/fruit'
+import type { BananaReturns } from './bananaReturns'
 import type { IfcoState } from './ifco'
 
 const KEY = 'eb-report-draft-v1'
@@ -15,6 +16,8 @@ export interface Draft {
   added: string[]
   customFruits: FruitWithDerived[]
   nextCustomId: number
+  /** Missing in drafts saved before the section existed */
+  bananaReturns?: BananaReturns
   ifco: IfcoState
   hqNotes: string
 }
@@ -41,6 +44,7 @@ export function draftHasEntries(d: Draft, emptyIfco: IfcoState): boolean {
     d.added.length > 0 ||
     d.customFruits.length > 0 ||
     JSON.stringify(d.ifco) !== JSON.stringify(emptyIfco) ||
+    Object.values(d.bananaReturns ?? {}).some((v) => v) ||
     Object.values(d.amounts).some((byVariant) => Object.values(byVariant).some((v) => v))
   )
 }

@@ -27,6 +27,8 @@ export interface InventoryReport {
   report_date: string
   worker: string
   lines: StockLine[]
+  /** Bananas sent back at the end of the day, kg; null = field left empty */
+  banana_returns: { conventional: number | null; bio: number | null }
   ifco: IfcoReport | null
   hq_notes: string
 }

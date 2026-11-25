@@ -29,6 +29,13 @@ class IfcoReport(BaseModel):
     reorder_large: bool = False
 
 
+class BananaReturns(BaseModel):
+    """Bananas sent back at the end of the day (they don't stay in the storage overnight), kg"""
+
+    conventional: float | None = Field(default=None, ge=0)
+    bio: float | None = Field(default=None, ge=0)
+
+
 class InventoryReport(BaseModel):
     """What the worker form sends: the digital "Warenbestände Lebensmittel" sheet."""
 
@@ -37,6 +44,8 @@ class InventoryReport(BaseModel):
     report_date: date
     worker: str = Field(min_length=1, max_length=80)
     lines: list[StockLine] = Field(max_length=300)
+    # Daily; missing in reports from tablets with an app version before this section existed
+    banana_returns: BananaReturns | None = None
     ifco: IfcoReport | None = None
     hq_notes: str = Field(default="", max_length=1000)
 

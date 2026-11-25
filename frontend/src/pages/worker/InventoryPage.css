@@ -246,6 +246,23 @@
   justify-self: end;
 }
 
+/* Added to this report by hand ("Frucht aus der Liste", typed in): a soft frame, so it is easy to
+   find between the other fruits in article-number order */
+.stock__row--added {
+  position: relative;
+  isolation: isolate;
+}
+
+.stock__row--added::before {
+  content: '';
+  position: absolute;
+  inset: 2px 8px;
+  z-index: -1;
+  border: 2px solid var(--added);
+  border-radius: 6px;
+  background: var(--added-bg);
+}
+
 /* Last row: type a fruit that is not in the catalogue */
 .stock__row--new {
   grid-template-columns: auto minmax(0, 1fr);

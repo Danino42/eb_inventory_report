@@ -24,6 +24,9 @@
   /* Empty fields in the review / PDF */
   --empty-bg: #fff1df;
   --empty-text: #b4691f;
+  /* Fruits added to the report by hand: a soft green frame */
+  --added: #9cc8a4;
+  --added-bg: #f4faf5;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   --backdrop: rgb(0 0 0 / 0.3);
 
@@ -61,6 +64,8 @@
   --alert-bg: #4a2c0a;
   --empty-bg: #3a2a17;
   --empty-text: #f2b27a;
+  --added: #3f6e48;
+  --added-bg: #18211a;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5);
   --backdrop: rgb(0 0 0 / 0.6);
   color-scheme: dark;

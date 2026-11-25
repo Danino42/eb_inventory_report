@@ -11,7 +11,7 @@ interface Props {
   onStep: (delta: StepDelta) => void
   /** Adds one crate: the fruit's "Inhalt (pro Kiste)", 1 until it is set in the Verwaltung */
   onAdd: (delta: number) => void
-  /** Only for fruits added by hand for this report */
+  /** Only for fruits added by hand for this report (their row gets a soft frame) */
   onRemove?: () => void
   /** Row in the Add-ons part: the variant is shown (it is not given by the title) */
   addon: boolean
@@ -27,7 +27,7 @@ export function StockRow({ fruit, variant, value, onChange, onStep, onAdd, onRem
   const lead = custom ? 'Eigene Eingabe' : fruit.article_number
 
   return (
-    <li className="stock__row">
+    <li className={`stock__row${onRemove ? ' stock__row--added' : ''}`}>
       <button type="button" className="stock__fruit" onClick={() => onAdd(perCrate)}>
         <FruitIcon devName={fruit.dev_name} size={44} />
         <span className="stock__label">

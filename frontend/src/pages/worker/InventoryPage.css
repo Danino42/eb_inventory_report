@@ -263,6 +263,11 @@
   background: var(--added-bg);
 }
 
+/* Typed in by hand: "Eigene Eingabe" already sets it apart, so only the soft shade */
+.stock__row--custom::before {
+  border-color: transparent;
+}
+
 /* Last row: type a fruit that is not in the catalogue */
 .stock__row--new {
   grid-template-columns: auto minmax(0, 1fr);
@@ -392,6 +397,11 @@
   min-height: 68px;
   padding: 8px 0;
   border-top: 1px solid var(--border);
+}
+
+/* Konventionell / Bio: a fruit button like in the list above, up to the amount field */
+.banana-returns__fruit {
+  flex: 1;
 }
 
 @media (min-width: 840px) {

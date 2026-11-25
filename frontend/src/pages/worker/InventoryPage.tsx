@@ -15,7 +15,7 @@ import { EMPTY_IFCO, type IfcoState } from './ifco'
 import { IfcoSection } from './IfcoSection'
 import { NamePicker } from './NamePicker'
 import { NewFruitForm } from './NewFruitForm'
-import { addAmount, parseAmount } from './amount'
+import { addAmount, crateContent, parseAmount } from './amount'
 import { ReviewDialog } from './ReviewDialog'
 import { SECTIONS, groupLines } from './sections'
 import { StockRow } from './StockRow'
@@ -484,7 +484,14 @@ export function InventoryPage() {
         </section>
       )}
 
-      {!loading && !error && <BananaReturnsSection value={bananaReturns} onChange={setBananaReturns} />}
+      {!loading && !error && (
+        <BananaReturnsSection
+          value={bananaReturns}
+          // A tap adds one crate: the Banane's "Inhalt (pro Kiste)" from the catalogue (1 if missing)
+          perCrate={crateContent(allFruits.find((f) => f.dev_name === 'banana') ?? {})}
+          onChange={setBananaReturns}
+        />
+      )}
 
       {!loading && !error && isMonday && <IfcoSection value={ifco} onChange={setIfco} />}
 

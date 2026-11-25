@@ -27,7 +27,7 @@ export function StockRow({ fruit, variant, value, onChange, onStep, onAdd, onRem
   const lead = custom ? 'Eigene Eingabe' : fruit.article_number
 
   return (
-    <li className={`stock__row${onRemove ? ' stock__row--added' : ''}`}>
+    <li className={`stock__row${onRemove ? ' stock__row--added' : ''}${custom ? ' stock__row--custom' : ''}`}>
       <button type="button" className="stock__fruit" onClick={() => onAdd(perCrate)}>
         <FruitIcon devName={fruit.dev_name} size={44} />
         <span className="stock__label">

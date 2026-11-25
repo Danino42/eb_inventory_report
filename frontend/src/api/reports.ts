@@ -7,7 +7,8 @@ export interface StockLine {
   dev_name: string
   name_de: string
   unit: Unit
-  variant: Variant
+  /** null = a fruit typed in by hand: one field, not split into Konventionell / Bio */
+  variant: Variant | null
   /** null = field left empty */
   quantity: number | null
   custom: boolean

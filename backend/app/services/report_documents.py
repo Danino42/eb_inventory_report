@@ -103,9 +103,11 @@ def format_quantity(q: float) -> str:
     return f"{q:.2f}".rstrip("0").rstrip(".").replace(".", ",")
 
 
-def grouped_lines(report: InventoryReport) -> list[tuple[StockLine, dict[str, StockLine]]]:
-    """One entry per fruit (form order), with its lines per variant."""
-    groups: dict[str, tuple[StockLine, dict[str, StockLine]]] = {}
+def grouped_lines(
+    report: InventoryReport,
+) -> list[tuple[StockLine, dict[str | None, StockLine]]]:
+    """One entry per fruit (form order), with its lines per variant (None: typed in by hand)."""
+    groups: dict[str, tuple[StockLine, dict[str | None, StockLine]]] = {}
     for line in report.lines:
         first, by_variant = groups.setdefault(line.dev_name, (line, {}))
         by_variant[line.variant] = line
@@ -244,20 +246,19 @@ def _fruit_table(
             icon((uploaded and uploaded(first.dev_name)) or icons_dir / f"{first.dev_name}.png"),
             Paragraph(name, base),
         ]
-        for c, variant in ((3, "conventional"), (4, "bio")):
-            line = by_variant.get(variant)
-            if line is None:
-                row.append("")  # variant does not exist for this fruit
-                style.append(("BACKGROUND", (c, r), (c, r), HEADER_FILL))
-            elif line.quantity is None:
-                row.append("leer")
-                style += [
-                    ("BACKGROUND", (c, r), (c, r), EMPTY_FILL),
-                    ("TEXTCOLOR", (c, r), (c, r), EMPTY_TEXT),
-                    ("FONTSIZE", (c, r), (c, r), 8),
-                ]
-            else:
-                row.append(format_quantity(line.quantity))
+        single = by_variant.get(None)
+        if single is not None:
+            # Typed in by hand: one amount over both columns, it is neither Konventionell nor Bio
+            row += [_quantity_cell(single, style, (3, r), (4, r)), ""]
+            style += [("SPAN", (3, r), (4, r)), ("ALIGN", (3, r), (4, r), "CENTER")]
+        else:
+            for c, variant in ((3, "conventional"), (4, "bio")):
+                line = by_variant.get(variant)
+                if line is None:
+                    row.append("")  # variant does not exist for this fruit
+                    style.append(("BACKGROUND", (c, r), (c, r), HEADER_FILL))
+                else:
+                    row.append(_quantity_cell(line, style, (c, r), (c, r)))
         row.append(UNIT_LABEL[first.unit])
         rows.append(row)
     return Table(
@@ -266,6 +267,20 @@ def _fruit_table(
         repeatRows=1,
         style=TableStyle(style),
     )
+
+
+def _quantity_cell(
+    line: StockLine, style: list, start: tuple[int, int], end: tuple[int, int]
+) -> str:
+    """The amount, or "leer" on soft orange for a field left empty"""
+    if line.quantity is None:
+        style += [
+            ("BACKGROUND", start, end, EMPTY_FILL),
+            ("TEXTCOLOR", start, end, EMPTY_TEXT),
+            ("FONTSIZE", start, end, 8),
+        ]
+        return "leer"
+    return format_quantity(line.quantity)
 
 
 def _banana_returns_table(report: InventoryReport) -> Table:
@@ -367,7 +382,7 @@ def build_csv(report: InventoryReport) -> bytes:
                 line.article_number,
                 line.dev_name,
                 line.name_de,
-                line.variant,
+                line.variant or "",  # empty: typed in by hand, neither Konventionell nor Bio
                 "" if line.quantity is None else f"{line.quantity:g}",
                 line.unit,
                 "1" if line.custom else "0",

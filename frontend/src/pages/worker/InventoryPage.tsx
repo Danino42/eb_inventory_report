@@ -57,7 +57,8 @@ function initialState(): { start: Draft; stale: Draft | null } {
 /** After sending: emailed, saved on the server (no email set up), or waiting on the tablet */
 type SentState = { kind: 'sent' | 'saved'; result: ReportResult; at: Date } | { kind: 'queued'; at: Date }
 
-/** A fruit typed in by hand (not in the catalogue): in the Add-ons, counted in Konventionell and Bio */
+/** A fruit typed in by hand (not in the catalogue): in the Add-ons, with one amount field. It is
+    not split into Konventionell / Bio: kept under 'conventional' in the form, sent without variant */
 function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived {
   return {
     dev_name: `custom_${id}`,
@@ -67,7 +68,7 @@ function makeCustomFruit(id: number, name: string, unit: Unit): FruitWithDerived
     note: '',
     unit,
     crate_content: 1,
-    variants: ['conventional', 'bio'],
+    variants: ['conventional'],
     availability: {},
     box_types: [],
     months: [],
@@ -245,17 +246,18 @@ export function InventoryPage() {
       report_id: reportId,
       report_date: reportDate,
       worker: workerName.trim(),
-      lines: shown.flatMap((f) =>
-        f.variants.map((variant) => ({
+      lines: shown.flatMap((f) => {
+        const custom = f.dev_name.startsWith('custom_')
+        return f.variants.map((variant) => ({
           article_number: f.article_number,
           dev_name: f.dev_name,
           name_de: f.name_de,
           unit: f.unit,
-          variant,
+          variant: custom ? null : variant,
           quantity: parseAmount(amounts[f.dev_name]?.[variant] ?? ''),
-          custom: f.dev_name.startsWith('custom_'),
-        })),
-      ),
+          custom,
+        }))
+      }),
       banana_returns: {
         conventional: parseAmount(bananaReturns.conventional),
         bio: parseAmount(bananaReturns.bio),

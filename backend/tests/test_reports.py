@@ -53,7 +53,8 @@ REPORT = {
         line("apple_gala", "Apfel Gala", "conventional", 12),
         line("apple_gala", "Apfel Gala", "bio", None),
         line("lemon", "Zitrone", "bio", 11, unit="pcs", article="2010"),
-        line("custom_1", "Saftorangen", "conventional", 2.5, article="", custom=True),
+        # Typed in by hand: one field, neither Konventionell nor Bio
+        line("custom_1", "Saftorangen", None, 2.5, article="", custom=True),
     ],
     "ifco": {"returned": 14, "enough_clean": True, "reorder_small": True, "reorder_large": False},
     "hq_notes": "Bananen-Lieferung unvollständig",
@@ -115,6 +116,16 @@ def test_csv_has_one_row_per_field(outbox: Path) -> None:
     assert rows[0]["report_date"] == "2026-11-02" and rows[0]["quantity"] == "12"
     assert rows[1]["quantity"] == ""  # empty field stays empty
     assert rows[3]["quantity"] == "2.5" and rows[3]["custom"] == "1"
+    assert rows[3]["variant"] == ""  # typed in by hand: neither Konventionell nor Bio
+
+
+def test_only_hand_typed_fruits_go_without_variant(outbox: Path) -> None:
+    no_variant = {**REPORT, "lines": [line("banana", "Banane", None, 4)]}
+    assert client.post("/api/reports", json=no_variant).status_code == 422
+    # Older app versions send hand-typed fruits as Konventionell + Bio: still accepted
+    older = line("custom_2", "Mango", "bio", 1, article="", custom=True)
+    report = {**REPORT, "lines": [*REPORT["lines"], older]}
+    assert client.post("/api/reports", json=report).status_code == 201
 
 
 def test_resent_report_is_not_emailed_twice(outbox: Path) -> None:

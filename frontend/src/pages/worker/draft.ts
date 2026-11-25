@@ -25,7 +25,10 @@ export interface Draft {
 export function loadDraft(): Draft | null {
   const draft = readJson<Draft | null>(KEY, null)
   // Ignore anything that does not look like a draft (e.g. from an older app version)
-  return draft && typeof draft.reportId === 'string' && typeof draft.reportDate === 'string' ? draft : null
+  if (!draft || typeof draft.reportId !== 'string' || typeof draft.reportDate !== 'string') return null
+  // Fruits typed in by hand once had a Konventionell and a Bio field; now they have one
+  const customFruits = (draft.customFruits ?? []).map((f): FruitWithDerived => ({ ...f, variants: ['conventional'] }))
+  return { ...draft, customFruits }
 }
 
 export function saveDraft(draft: Draft): void {

@@ -1,7 +1,7 @@
 from datetime import date
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.models.fruit import Unit, Variant
 
@@ -14,10 +14,18 @@ class StockLine(BaseModel):
     dev_name: str = Field(max_length=60)
     name_de: str = Field(min_length=1, max_length=80)
     unit: Unit
-    variant: Variant
+    # None only for a fruit typed in by hand: one field, not split into Konventionell / Bio
+    # (older app versions still send those with a variant)
+    variant: Variant | None = None
     # None = field left empty (not counted)
     quantity: float | None = Field(default=None, ge=0)
     custom: bool = False
+
+    @model_validator(mode="after")
+    def _variant_for_catalogue_fruits(self) -> Self:
+        if self.variant is None and not self.custom:
+            raise ValueError("variant is required for catalogue fruits")
+        return self
 
 
 class IfcoReport(BaseModel):

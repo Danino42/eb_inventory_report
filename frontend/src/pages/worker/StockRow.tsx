@@ -21,8 +21,10 @@ interface Props {
 export function StockRow({ fruit, variant, value, onChange, onStep, onAdd, onRemove, addon }: Props) {
   const perCrate = crateContent(fruit)
   const amount = parseAmount(value)
-  // Typed into the form by hand; catalogue fruits may simply have no article number yet
-  const lead = fruit.dev_name.startsWith('custom_') ? 'Eigene Eingabe' : fruit.article_number
+  // Typed into the form by hand: one field, not split into Konventionell / Bio
+  const custom = fruit.dev_name.startsWith('custom_')
+  // Catalogue fruits may simply have no article number yet
+  const lead = custom ? 'Eigene Eingabe' : fruit.article_number
 
   return (
     <li className="stock__row">
@@ -32,7 +34,7 @@ export function StockRow({ fruit, variant, value, onChange, onStep, onAdd, onRem
           <span className="stock__name">{fruit.name_de}</span>
           <span className="stock__meta">
             {lead}
-            {addon && `${lead ? ' · ' : ''}${VARIANT_SHORT[variant]}`}
+            {addon && !custom && `${lead ? ' · ' : ''}${VARIANT_SHORT[variant]}`}
           </span>
         </span>
         {/* Crates only mean something if one holds more than a single unit */}
@@ -46,7 +48,7 @@ export function StockRow({ fruit, variant, value, onChange, onStep, onAdd, onRem
           unit={fruit.unit}
           onChange={onChange}
           onStep={onStep}
-          label={`${fruit.name_de} ${VARIANT_LABELS[variant]}`}
+          label={custom ? fruit.name_de : `${fruit.name_de} ${VARIANT_LABELS[variant]}`}
         />
         {onRemove && (
           <button type="button" className="link-button stock__remove" onClick={onRemove}>

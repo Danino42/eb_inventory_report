@@ -38,6 +38,15 @@ function subscribeResize(listener: () => void) {
   return () => window.removeEventListener('resize', listener)
 }
 
+/** "12 kg", or "leer" in soft orange */
+function Amount({ line }: { line: StockLine }) {
+  return (
+    <span className={`review__value${line.quantity === null ? ' is-empty' : ''}`}>
+      {line.quantity === null ? 'leer' : `${formatAmount(line.quantity)} ${UNIT_SHORT[line.unit]}`}
+    </span>
+  )
+}
+
 /** Splits the fruits into columns that read top to bottom, like the paper form */
 function toColumns<T>(items: T[], columns: number): T[][] {
   const perColumn = Math.max(1, Math.ceil(items.length / columns))
@@ -114,24 +123,29 @@ export function ReviewDialog({ report, sending, error, onSend, onClose }: Props)
                         <span>{lines[0].name_de}</span>
                       </span>
                     </td>
-                    {VARIANTS.map((v) => {
-                      const line = lines.find((l) => l.variant === v)
-                      if (!line) {
-                        // This fruit is not stocked in this variant (e.g. lemons: Bio only)
+                    {lines[0].variant === null ? (
+                      // Typed in by hand: one amount, neither Konventionell nor Bio
+                      <td colSpan={VARIANTS.length} className="review__both">
+                        <Amount line={lines[0]} />
+                      </td>
+                    ) : (
+                      VARIANTS.map((v) => {
+                        const line = lines.find((l) => l.variant === v)
+                        if (!line) {
+                          // This fruit is not stocked in this variant (e.g. lemons: Bio only)
+                          return (
+                            <td key={v} className="review__num review__na">
+                              –
+                            </td>
+                          )
+                        }
                         return (
-                          <td key={v} className="review__num review__na">
-                            –
+                          <td key={v} className="review__num">
+                            <Amount line={line} />
                           </td>
                         )
-                      }
-                      return (
-                        <td key={v} className="review__num">
-                          <span className={`review__value${line.quantity === null ? ' is-empty' : ''}`}>
-                            {line.quantity === null ? 'leer' : `${formatAmount(line.quantity)} ${UNIT_SHORT[line.unit]}`}
-                          </span>
-                        </td>
-                      )
-                    })}
+                      })
+                    )}
                   </tr>
                 ))}
               </tbody>

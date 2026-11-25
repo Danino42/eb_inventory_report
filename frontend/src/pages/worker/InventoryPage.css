@@ -704,6 +704,12 @@
   white-space: nowrap;
 }
 
+/* A fruit typed in by hand: one amount under both Konv. and Bio */
+.review__table .review__both {
+  text-align: center;
+  white-space: nowrap;
+}
+
 /* Icon and name side by side; long names wrap instead of being cut off */
 .review__name {
   display: flex;

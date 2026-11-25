@@ -263,18 +263,27 @@
   background: var(--added-bg);
 }
 
-/* Typed in by hand ("Eigene Eingabe"): no frame, the whole row in a light yellow */
-.stock__row--custom {
-  background: var(--custom-bg);
-}
-
+/* Typed in by hand ("Eigene Eingabe"): no frame, its card in a light yellow instead of grey */
 .stock__row--custom::before {
   content: none;
 }
 
-/* The fruit button shows the yellow too (hover and tap still give their feedback) */
-.stock__row--custom .stock__fruit:not(:hover, :active) {
-  background: transparent;
+.stock__row--custom .stock__fruit {
+  border-color: var(--custom-border);
+  background: var(--custom-bg);
+}
+
+.stock__row--custom .stock__fruit:hover,
+.stock__row--custom .stock__fruit:active {
+  background: var(--custom-bg-active);
+}
+
+.stock__row--custom .stock__meta {
+  color: var(--custom-text);
+}
+
+.stock__row--custom .fruit-icon--empty {
+  background: var(--custom-icon);
 }
 
 /* Last row: type a fruit that is not in the catalogue */

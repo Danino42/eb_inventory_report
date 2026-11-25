@@ -27,8 +27,12 @@
   /* Fruits added to the report from the list: a soft green frame */
   --added: #9cc8a4;
   --added-bg: #f4faf5;
-  /* Fruits typed in by hand: the whole row in a light yellow */
-  --custom-bg: rgb(255 212 0 / 0.12);
+  /* Fruits typed in by hand: their card in a light yellow */
+  --custom-bg: #fffbeb;
+  --custom-bg-active: #fef3c7;
+  --custom-border: #f6e2a4;
+  --custom-text: #a16207;
+  --custom-icon: #fcefc4;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   --backdrop: rgb(0 0 0 / 0.3);
 
@@ -68,7 +72,11 @@
   --empty-text: #f2b27a;
   --added: #3f6e48;
   --added-bg: #18211a;
-  --custom-bg: rgb(255 212 0 / 0.07);
+  --custom-bg: #25221a;
+  --custom-bg-active: #312c1c;
+  --custom-border: #4f4524;
+  --custom-text: #e2c172;
+  --custom-icon: #3a3420;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5);
   --backdrop: rgb(0 0 0 / 0.6);
   color-scheme: dark;

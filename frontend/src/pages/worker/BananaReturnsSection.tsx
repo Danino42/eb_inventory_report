@@ -10,7 +10,7 @@ interface Props {
   onChange: (update: (current: BananaReturns) => BananaReturns) => void
 }
 
-/** Daily section before IFCO: Konventionell and Bio side by side */
+/** Daily section before IFCO: Konventionell and Bio (side by side on wide screens) */
 export function BananaReturnsSection({ value, onChange }: Props) {
   return (
     <section className="form-section" aria-label="Bananen Retouren">

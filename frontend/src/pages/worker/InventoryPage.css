@@ -360,24 +360,38 @@
   color: var(--on-strong);
 }
 
-/* Bananen Retouren: Konventionell and Bio side by side where there is room, otherwise below
-   each other with the amounts lined up */
+/* Bananen Retouren: rows like IFCO (label left, amount right), on wide screens as two halves
+   side by side */
 .banana-returns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(342px, max-content));
-  gap: 12px 40px;
-  padding: 8px 0 4px;
-  border-top: 1px solid var(--border);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .banana-returns__field {
-  display: grid;
-  grid-template-columns: 112px auto;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  min-height: 68px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
 }
 
-/* "Leeren" at the end of the progress line */
+@media (min-width: 840px) {
+  .banana-returns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .banana-returns__field:first-child {
+    padding-right: 24px;
+  }
+
+  .banana-returns__field + .banana-returns__field {
+    padding-left: 24px;
+    border-left: 1px solid var(--border);
+  }
+}
+
 .hq-notes {
   width: 100%;
   min-height: 96px;
@@ -916,11 +930,8 @@
   }
 
   /* Bananen Retouren: label above each field, both full width */
-  .banana-returns {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .banana-returns__field {
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 4px;
   }

@@ -92,8 +92,8 @@ const de = {
 
   // Fruit catalogue
   fruitsTitle: 'Früchtekatalog',
-  detailedView: 'Detailansicht',
-  simpleView: 'Einfache Ansicht',
+  view: 'Ansicht',
+  views: { simple: 'Einfach', detailed: 'Details', edit: 'Direkt bearbeiten' },
   addFruit: 'Frucht hinzufügen',
   month: 'Monat',
   allMonths: 'Alle Monate',
@@ -139,6 +139,14 @@ const de = {
   allYear: 'Ganzes Jahr',
   clearMonths: 'Leeren',
   confirmDeleteFruit: (name: string) => `${name} löschen? Die Frucht verschwindet für alle aus der Liste.`,
+
+  // Catalogue as an editable table ("Direkt bearbeiten")
+  variantsShort: { conventional: 'Konv.', bio: 'Bio' },
+  rowSaved: 'Gespeichert',
+  nameRequired: 'Bitte einen deutschen Namen eingeben.',
+  wholeYear: 'Ganzes Jahr an / aus',
+  pictureOf: (name: string) => `Bild: ${name}`,
+  newFruit: 'Neue Frucht',
 
   // Order articles
   ordersTitle: 'Bestellartikel',
@@ -224,8 +232,8 @@ const en: AdminText = {
   testFailed: 'Test email failed:',
 
   fruitsTitle: 'Fruit catalogue',
-  detailedView: 'Detailed view',
-  simpleView: 'Simple view',
+  view: 'View',
+  views: { simple: 'Simple', detailed: 'Details', edit: 'Edit directly' },
   addFruit: 'Add fruit',
   month: 'Month',
   allMonths: 'All months',
@@ -269,6 +277,13 @@ const en: AdminText = {
   allYear: 'All year',
   clearMonths: 'Clear',
   confirmDeleteFruit: (name) => `Delete ${name}? It will be removed from the list for everyone.`,
+
+  variantsShort: { conventional: 'Conv.', bio: 'Org.' },
+  rowSaved: 'Saved',
+  nameRequired: 'Please enter a German name.',
+  wholeYear: 'Whole year on / off',
+  pictureOf: (name) => `Picture: ${name}`,
+  newFruit: 'New fruit',
 
   ordersTitle: 'Order articles',
   demoData: 'demo data',

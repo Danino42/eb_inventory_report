@@ -1,0 +1,281 @@
+/* "Direkt bearbeiten": the catalogue as a table of fields */
+
+/* Fixed columns for the short fields; the names and the note share the rest, so the table fills
+   the screen from a 13" laptop up (below that it scrolls sideways) */
+.edit-table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.edit-col--picture {
+  width: 54px;
+}
+
+.edit-col--article {
+  width: 84px;
+}
+
+.edit-col--unit {
+  width: 74px;
+}
+
+.edit-col--crate {
+  width: 98px;
+}
+
+.edit-col--variants {
+  width: 104px;
+}
+
+.edit-col--months {
+  width: 340px;
+}
+
+.edit-col--actions {
+  width: 124px;
+}
+
+.edit-table th,
+.edit-table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.edit-table th {
+  padding: 0;
+  background: var(--header-bg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.edit-table .sort-button,
+.edit-table__head {
+  padding: 7px 6px;
+}
+
+.edit-table__head {
+  display: block;
+}
+
+.edit-table input,
+.edit-table select {
+  min-height: 32px;
+  padding: 3px 6px;
+  border-color: var(--border);
+}
+
+.edit-table input:hover,
+.edit-table select:hover {
+  border-color: var(--border-strong);
+}
+
+.edit-table input.is-invalid {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.edit-table__article,
+.edit-table__name,
+.edit-table__note {
+  width: 100%;
+}
+
+.edit-table__crate {
+  width: 58px;
+  text-align: right;
+}
+
+.edit-table__with-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+/* Picture: a tap chooses a new one */
+.edit-table__picture {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.edit-table__picture:hover {
+  border-color: var(--border-strong);
+  background: var(--hover);
+}
+
+.edit-table__picture.is-empty {
+  border-style: dashed;
+  cursor: default;
+}
+
+/* On/off switches: Konv. / Bio and Add-on */
+.edit-toggles {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.edit-toggle {
+  min-height: 28px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.edit-toggle.is-on {
+  border-color: var(--text-strong);
+  background: var(--text-strong);
+  color: var(--on-strong);
+}
+
+.edit-toggle:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.edit-toggle--small {
+  min-height: 20px;
+  padding: 0 6px;
+  font-size: 0.72rem;
+}
+
+/* Availability: one line per box type with its 12 months; a tap on the box name sets the whole year */
+.edit-boxes {
+  display: grid;
+  gap: 3px;
+}
+
+.edit-box {
+  display: grid;
+  grid-template-columns: 56px auto auto;
+  justify-content: start;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit-box__label {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.edit-box__label:hover {
+  color: var(--text-strong);
+}
+
+.edit-box__months {
+  display: grid;
+  grid-template-columns: repeat(12, 15px);
+  gap: 2px;
+}
+
+.edit-month {
+  width: 15px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.edit-month:hover {
+  background: var(--border-strong);
+}
+
+.edit-month.is-on {
+  background: var(--accent);
+}
+
+.edit-month.is-on:hover {
+  opacity: 0.8;
+}
+
+/* The filtered (or current) month: a thin outline, it repeats on every line */
+.edit-month.is-highlight {
+  outline: 1px solid var(--muted);
+  outline-offset: 1px;
+}
+
+/* Header: the month initials over the month cells */
+.edit-box--head {
+  padding: 0 6px 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.edit-box--head .is-highlight {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.edit-table__actions {
+  white-space: nowrap;
+  text-align: right !important;
+}
+
+.edit-table__status {
+  display: inline-block;
+  width: 18px;
+  margin-right: 8px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.edit-table__status.is-saved {
+  color: var(--accent);
+}
+
+.edit-table__status.is-error {
+  color: var(--danger);
+}
+
+/* What went wrong, right under the row */
+.edit-table__error td {
+  padding-top: 0;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+/* The empty row at the end adds a new fruit */
+.edit-table__new td {
+  border-bottom: none;
+  background: var(--hover);
+}
+
+.edit-picture {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.edit-picture__body {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.edit-picture__body h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}

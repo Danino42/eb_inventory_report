@@ -10,6 +10,9 @@ export type SortKey =
   | 'crate_content'
   | 'months'
   | BoxType
+/** Columns the edit view ("Direkt bearbeiten") can be sorted by */
+export const EDIT_SORT_KEYS: SortKey[] = ['article_number', 'name_de', 'name_en', 'unit', 'crate_content', 'months']
+
 export type SortDirection = 'asc' | 'desc'
 export interface Sort {
   key: SortKey

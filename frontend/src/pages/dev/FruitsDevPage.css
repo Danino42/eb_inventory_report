@@ -1,9 +1,15 @@
+/* One width for all Verwaltung pages and views, so the header never jumps when switching */
 .dev-page {
-  max-width: 1280px;
+  max-width: 1480px;
   margin: 0 auto;
   padding: 24px 16px 48px;
   display: grid;
   gap: 20px;
+}
+
+/* A table wider than the screen scrolls inside its frame instead of moving the whole page */
+.dev-page > * {
+  min-width: 0;
 }
 
 .dev-page__header {
@@ -18,7 +24,13 @@
 
 .dev-page__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+/* Einfach | Details | Direkt bearbeiten: as tall as the buttons next to it */
+.dev-page__views button {
+  min-height: 36px;
 }
 
 .notice {
@@ -396,6 +408,25 @@
 @media (min-width: 720px) {
   .month-toggles {
     grid-template-columns: repeat(12, 1fr);
+  }
+}
+
+/* Laptop screens (13" and up): the detailed table gets tighter and the "Add-on" mark goes under
+   the months, so it fits without scrolling sideways */
+@media (max-width: 1440px) {
+  .fruit-table--detailed td,
+  .fruit-table--detailed .sort-button {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .fruit-table--detailed .fruit-table__name {
+    min-width: 170px;
+  }
+
+  .fruit-table--detailed .addon-mark {
+    display: block;
+    margin: 2px 0 0;
   }
 }
 

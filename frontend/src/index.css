@@ -45,6 +45,8 @@
   background: var(--bg);
   color-scheme: light;
   -webkit-font-smoothing: antialiased;
+  /* Room for the scrollbar on every page, so short pages don't shift sideways next to long ones */
+  scrollbar-gutter: stable;
 }
 
 /* Dark mode, switched with the ThemeToggle button */

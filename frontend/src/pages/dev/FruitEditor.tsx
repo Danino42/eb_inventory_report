@@ -15,6 +15,7 @@ import {
   type BoxType,
   type Fruit,
 } from '../../types/fruit'
+import { ALL_MONTHS, EMPTY_FRUIT, MAX_PICTURE_BYTES, offeredOnly, parseCrateContent, toDraft } from './fruitDraft'
 
 interface Props {
   /** null = create a new fruit */
@@ -22,47 +23,6 @@ interface Props {
   onClose: () => void
   /** Called with a short confirmation, e.g. "Kiwi saved" */
   onSaved: (message: string) => void
-}
-
-const EMPTY_FRUIT: Fruit = {
-  dev_name: '',
-  name_en: '',
-  name_de: '',
-  article_number: '',
-  note: '',
-  unit: 'kg',
-  crate_content: 1,
-  variants: ['conventional', 'bio'],
-  availability: {},
-}
-
-/** Larger files are rejected before the browser tries to read them */
-const MAX_PICTURE_BYTES = 25_000_000
-
-/** "Inhalt": a number from 0.1 with at most one decimal place ("13,5" or "13.5"); null if not */
-function parseCrateContent(text: string): number | null {
-  const value = text.trim().replace(',', '.')
-  if (!/^\d{1,4}(\.\d)?$/.test(value)) return null
-  const n = Number(value)
-  return n >= 0.1 && n <= 1000 ? n : null
-}
-
-const ALL_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
-
-/** Strips derived fields (box_types, months) the API adds, so only stored fields are sent back */
-function toDraft(fruit: Fruit): Fruit {
-  const { dev_name, name_en, name_de, article_number, note, unit, crate_content, variants, availability } = fruit
-  return {
-    dev_name,
-    name_en,
-    name_de,
-    article_number,
-    note,
-    unit,
-    crate_content: crate_content ?? 1,
-    variants: [...variants],
-    availability: structuredClone(availability),
-  }
 }
 
 export function FruitEditor({ fruit, onClose, onSaved }: Props) {
@@ -188,9 +148,7 @@ export function FruitEditor({ fruit, onClose, onSaved }: Props) {
     const crateContent = parseCrateContent(crateText)
     if (crateContent === null) return setError(t.crateContentInvalid)
     // A box type without any month is the same as not offered
-    const availability = Object.fromEntries(
-      Object.entries(draft.availability).filter(([, a]) => a.months.length > 0),
-    )
+    const availability = offeredOnly(draft.availability)
     // New fruits get their dev name from the server (made from the name); existing ones keep it
     const payload = {
       ...draft,

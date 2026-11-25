@@ -1,6 +1,7 @@
 /* PIN screen in front of the Verwaltung */
 .pin-page {
-  max-width: 1280px;
+  /* As wide as the Verwaltung pages: "‹ Start" stays in place after the PIN */
+  max-width: 1480px;
   min-height: 100dvh;
   margin: 0 auto;
   padding: 24px 16px;

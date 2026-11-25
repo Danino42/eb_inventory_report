@@ -263,9 +263,18 @@
   background: var(--added-bg);
 }
 
-/* Typed in by hand: "Eigene Eingabe" already sets it apart, so only the soft shade */
+/* Typed in by hand ("Eigene Eingabe"): no frame, the whole row in a light yellow */
+.stock__row--custom {
+  background: var(--custom-bg);
+}
+
 .stock__row--custom::before {
-  border-color: transparent;
+  content: none;
+}
+
+/* The fruit button shows the yellow too (hover and tap still give their feedback) */
+.stock__row--custom .stock__fruit:not(:hover, :active) {
+  background: transparent;
 }
 
 /* Last row: type a fruit that is not in the catalogue */
